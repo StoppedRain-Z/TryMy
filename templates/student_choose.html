@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<script src="https://libs.baidu.com/jquery.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <title>志愿填报</title>
+</head>
+<body>
+<form method="post">
+
+</form>
+<table id="table" border="1" cellspacing="0" cellpadding="0" >
+   <tr>
+        <th>name</th>
+        <th>url</th>
+    </tr>
+    {% for data in result %}
+        <p><input type="checkbox" name="{{ data.cardID }}" value="Bike" /> <a href="{{ data.teacher_info }}">{{ data.name }}</a></p>
+    {% endfor %}
+</table>
+</body>
+<!--
+<script>
+    $.get('http://127.0.0.1:8000/student_center/student_choose',
+    function(result){
+        return result;
+    });
+</script>
+-->
+</html>

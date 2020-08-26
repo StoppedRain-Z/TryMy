@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>这是辅导员个人中心</title>
+</head>
+<body>
+    <ul class="nav navbar-nav navbar-right">
+        <!-- 验证是否已经登录-->
+        <!-- https://www.jianshu.com/p/1a95808faed9-->
+        {% if not request.user.is_authenticated %}
+        <li>
+            <a href="/login">登录</a>
+        </li>
+        {% else %}  
+        <!-- 如果已经登录，则展示用户名和下拉菜单-->
+            <li><a href="/logout">Logout</a></li>
+        </li>
+        {% endif %}
+    </ul>
+</body>
+</html>

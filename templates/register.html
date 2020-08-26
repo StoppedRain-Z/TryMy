@@ -1,0 +1,88 @@
+<!--https://www.cnblogs.com/lizhaoyao/p/6625179.html-->
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="http://cdn.bootcss.com/jquery/2.2.4/jquery.js"></script>
+</head>
+<body>
+    <div>
+        <table>
+            
+            <form method="post">
+                <tr>
+                    <td>链接类型</td>
+                    <td>
+                        <select name="user_type">
+                            <option value="S">学生</option>
+                            <option value="T">教师</option>
+                            <option value="A">辅导员</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>学生证号</td>
+                    <td>
+                        <input type="text" name="cardID" id="" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>姓名</td>
+                    <td>
+                        <input type="text" name="name" id="" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>密码</td>
+                    <td>
+                        <input type="password" name="password" id="" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>邮箱</td>
+                    <td>
+                        <input type="text" name="email" id="" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>联系电话</td>
+                    <td>
+                        <input type="text" name="mobile" id="" />
+                    </td>
+                </tr>
+                <tr id="logo_div" style="display:none;">
+                    <td>个人主页</td>
+                    <td>
+                        <input type="text" name="teacher_info" id="" default="请输入个人主页" />
+                    </td>
+                </tr>
+                <tr id="logo_div2" >
+                    <td>年级</td>
+                    <td>
+                        <input type="text" name="grade" id="" default="2016" />
+                    </td>
+                </tr>
+                <tr>
+                    <input type="submit" name="submit1" value="注册">
+                </tr>
+        </form>
+        </table>
+    </div>
+    <script type="text/javascript">
+        $(function(){
+            //页面加载完毕后开始执行的事件
+            $("select[name='user_type']").change(function(){
+                if($(this).val()=="T")
+                {
+                    $("#logo_div").show();
+                    $("#logo_div2").hide();
+                }else{
+                    $("#logo_div").hide();
+                    $("#logo_div2").show();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
