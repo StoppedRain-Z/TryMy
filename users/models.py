@@ -20,7 +20,7 @@ class User(AbstractUser):
 
 class Teacher(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE,primary_key=True)
-    institute = models.CharField(max_length=128)
+    institute = models.CharField(max_length=128,default='')
     teacher_info = models.URLField(verbose_name="个人主页",max_length=128,default='')
 
 class Student(models.Model):
