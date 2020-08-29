@@ -13,7 +13,7 @@ class RegisterView(View):
     '''
 
     def get(self,request):
-        return render(request,'register.html')
+        return render(request,'register')
     
     def post(self,request):
         data = request.POST

@@ -60,7 +60,7 @@ class T_Choice(View):
         # return render("student_choose.html", json.dumps(json_list))
         return JsonResponse(json.dumps(json_list), safe=False)
 
-    def post(self,request):
+    def post(self, request):
         data = request.POST
         student_list = data.get['student_list']
         user = request.user
@@ -121,6 +121,9 @@ def op_s(request, student_choice):
         student.teacher = teacher
         student.save()
     return HttpResponse("ok")
+
+
+
 
 
 

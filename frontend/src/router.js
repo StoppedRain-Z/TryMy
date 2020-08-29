@@ -27,17 +27,17 @@ var router = new VueRouter({
       component: student_center,
       children: [
         {path: '', component: center},
-        {path: 'choose_teacher', component: choose_teacher},
-        {path: 'choose_queue', component: choose_queue_S},
-        {path: 'S_unfinished', component: S_unfinished},
-        {path: 'S_finished', component: S_finished}
+        {path: '/choose_teacher', component: choose_teacher},
+        {path: '/choose_queue_S', component: choose_queue_S},
+        {path: '/S_unfinished', component: S_unfinished},
+        {path: '/S_finished', component: S_finished}
       ]
     },
     {
       path: '/teacher_center',
       component: teacher_center,
       children: [
-        {path:'/',component: center},
+        {path:'',component: center},
         {path:'choose_student',component: choose_student},
         {path:'choose_queue',component: choose_queue_T},
         {path:'T_unfinished',component: T_unfinished},
@@ -48,7 +48,7 @@ var router = new VueRouter({
       path:'/assistant_center',
       component: assistant_center,
       children: [
-        {path:'/',component: center},
+        {path:'',component: center},
         {path:'create_progress',component: create_progress}
       ]
     }

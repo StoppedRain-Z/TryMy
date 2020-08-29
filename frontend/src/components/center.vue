@@ -1,7 +1,9 @@
 <template>
   <div>
     <el-container>
-      <el-main></el-main>
+      <el-main>
+        这是一个主界面
+      </el-main>
     </el-container>
   </div>
 </template>

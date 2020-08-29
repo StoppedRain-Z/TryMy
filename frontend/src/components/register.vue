@@ -2,7 +2,7 @@
   <div>
     <el-form :model="registerData" ref="form" label_width="80px">
       <el-form-item label="我是" prop="user_type">
-        <el-select @change="showChange">
+        <el-select @change="showChange" v-model="registerData.user_type">
           <el-option key="学生" label="学生" value="S"></el-option>
           <el-option key="教师" label="教师" value="T"></el-option>
           <el-option key="辅导员" label="辅导员" value="A"></el-option>
