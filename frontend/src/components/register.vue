@@ -45,40 +45,40 @@
 
 <script>
 export default{
-  data(){
+  data () {
     return {
-      registerData:{
-        cardID:"",
-        name:"",
-        password:"",
-        email:"",
-        mobile:"",
-        teacher_info:"",
-        institute:"",
-        grade:"",
+      registerData: {
+        cardID: '',
+        name: '',
+        password: '',
+        email: '',
+        mobile: '',
+        teacher_info: '',
+        institute: '',
+        grade: ''
       },
-      showA:true,
-      showT:false
-    };
+      showA: true,
+      showT: false
+    }
   },
-  methods:{
-    register(){
-      console.log(this.registerData);
+  methods: {
+    register () {
+      console.log(this.registerData)
       this.$http
-        .post("register/",this.registerData)
+        .post('register/', this.registerData)
         .then(result => {
-          console.log(result.body);
-        });
+          console.log(result.body)
+        })
     },
-    showChange(value){
-      if(value === "T"){
-        this.showA = false;
-        this.showT = true;
-      }else{
-        this.showA = true;
-        this.showT = false;
+    showChange (value) {
+      if (value === 'T') {
+        this.showA = false
+        this.showT = true
+      } else {
+        this.showA = true
+        this.showT = false
       }
     }
   }
-};
+}
 </script>

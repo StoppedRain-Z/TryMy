@@ -20,30 +20,31 @@
 
 <script>
 export default {
-  data(){
+  data () {
     return {
       tableData: []
-    };
+    }
   },
-  methods:{
-    getData(){
-      this.$http.get("/student_center/choose_teacher").then(result => {
-        console.log(result.body);
-        this.tableData = result.body;
+  methods: {
+    getData () {
+      this.$http.get('/student_center/choose_teacher').then(result => {
+        console.log(result.body)
+        this.tableData = result.body
+        console.log(result.body)
       })
     },
-    commit(){
+    commit () {
       var selectData = this.$refs.multipleTable.selection
       console.log(selectData)
       this.$http
-        .post("student_center/choose_teacher.",selectData)
+        .post('student_center/choose_teacher.', selectData)
         .then(result => {
-          console.log(result.body);
-        });
+          console.log(result.body)
+        })
     }
   },
-  created() {
+  created () {
     this.getData()
   }
-};
+}
 </script>

@@ -23,23 +23,25 @@ def assistant_center(requests):
 
 
 class S_Choice(View):
+
     @staticmethod
-    def get(self, request):
+    def get(self):
         teacher_list = Teacher.objects.all()
         json_list = []
         for teacher in teacher_list:
-            json_item = {"cardID": teacher.user.username, "name": teacher.user.name,
-                         "teacher_info": teacher.teacher_info, "institute": teacher.institute}
+            json_item = {"teacher_name": teacher.user.name,
+                         "teacher_institute": teacher.institute,
+                         "teacher_info": teacher.teacher_info}
 
             json_list.append(json_item)
         print(json_list)
         # return render("student_choose.html", json.dumps(json_list))
         return JsonResponse(json.dumps(json_list), safe=False)
     
-    def post(self, request):
-        data = request.POST
+    def post(self):
+        data = self.request.POST
         teacher_list = data.get['teacher_list']
-        user = request.user
+        user = self.request.user
         student = Student.objects.get(user=user)
         for teacher in teacher_list:
             t = Teacher.objects.get(cardID=teacher)
@@ -49,7 +51,7 @@ class S_Choice(View):
 
 class T_Choice(View):
     @staticmethod
-    def get(self, request):
+    def get(self):
         student_list = Student.objects.all()
         json_list = []
         for student in student_list:
@@ -60,10 +62,10 @@ class T_Choice(View):
         # return render("student_choose.html", json.dumps(json_list))
         return JsonResponse(json.dumps(json_list), safe=False)
 
-    def post(self, request):
-        data = request.POST
+    def post(self):
+        data = self.request.POST
         student_list = data.get['student_list']
-        user = request.user
+        user = self.request.user
         teacher = Teacher.objects.get(user=user)
         for student in student_list:
             s = Student.objects.get(cardID=student)
@@ -121,6 +123,11 @@ def op_s(request, student_choice):
         student.teacher = teacher
         student.save()
     return HttpResponse("ok")
+
+
+def create_progress(request):
+    data = request.POST
+
 
 
 
