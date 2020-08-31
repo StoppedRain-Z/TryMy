@@ -11,13 +11,13 @@ class RegisterView(View):
     """
     用户注册接口
     """
-
-    def get(self, request):
+    @staticmethod
+    def get(request):
         print("visit register")
         return render(request, 'register')
 
-
-    def post(self, request):
+    @staticmethod
+    def post(request):
         print("post register")
         data = request.POST
         user_type = data.get('user_type')
@@ -55,12 +55,12 @@ class RegisterView(View):
 
 
 class LoginView(View):
-
-    def get(self, request):
+    @staticmethod
+    def get(request):
         return render(request, 'login.html')
 
-
-    def post(self, request):
+    @staticmethod
+    def post(request):
         response = {}
         data = request.POST
         cardID = data.get('cardID')
@@ -87,6 +87,6 @@ class LoginView(View):
 
 class LogoutView(View):
     @staticmethod
-    def get(self, request):
+    def get(request):
         logout(request)
         return HttpResponseRedirect(reverse("login"))
