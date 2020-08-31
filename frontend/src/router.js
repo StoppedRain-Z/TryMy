@@ -15,13 +15,14 @@ import choose_queue_T from './components/teacher/choose_queue'
 import T_unfinished from './components/teacher/T_unfinished'
 import T_finished from './components/teacher/T_finished'
 import assistant_center from './components/assistant/assistant_center'
-import create_progress from './components/assistant/cretae_progress'
+import create_progress from './components/assistant/create_progress'
+import check_progress from './components/assistant/check_progress'
 
 var router = new VueRouter({
-  routes:[
-    {path:'/',component:index},
-    {path:'/register',component: register},
-    {path: '/login',component: login},
+  routes: [
+    {path: '/', component: index},
+    {path: '/register', component: register},
+    {path: '/login', component: login},
     {
       path: '/student_center',
       component: student_center,
@@ -37,23 +38,22 @@ var router = new VueRouter({
       path: '/teacher_center',
       component: teacher_center,
       children: [
-        {path:'',component: center},
-        {path:'choose_student',component: choose_student},
-        {path:'choose_queue',component: choose_queue_T},
-        {path:'T_unfinished',component: T_unfinished},
-        {path:'T_finished',component: T_finished}
+        {path: '', component: center},
+        {path: 'choose_student', component: choose_student},
+        {path: 'choose_queue', component: choose_queue_T},
+        {path: 'T_unfinished', component: T_unfinished},
+        {path: 'T_finished', component: T_finished}
       ]
     },
     {
-      path:'/assistant_center',
+      path: '/assistant_center',
       component: assistant_center,
       children: [
-        {path:'',component: center},
-        {path:'create_progress',component: create_progress}
+        {path: '', component: center},
+        {path: 'create_progress', component: create_progress},
+        {path: 'check_progress', component: check_progress}
       ]
     }
   ]
-});
+})
 export default router
-
-

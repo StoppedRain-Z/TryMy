@@ -2,7 +2,7 @@
   <div>
     <el-container>
       <el-main>
-        choose_student
+        check_progress
       </el-main>
     </el-container>
   </div>

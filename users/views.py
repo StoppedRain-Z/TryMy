@@ -1,21 +1,22 @@
 from django.shortcuts import render
-from django.shortcuts import redirect,reverse,HttpResponseRedirect
+from django.shortcuts import redirect, reverse, HttpResponseRedirect
 # Create your views here.
-from django.contrib.auth import login,authenticate,logout
+from django.contrib.auth import login, authenticate, logout
 from .models import *
 from django.views import View
-from django.http import JsonResponse,HttpResponse,HttpResponseBadRequest
-# Create your views here.
+from django.http import JsonResponse
+
 
 class RegisterView(View):
-    '''
+    """
     用户注册接口
-    '''
+    """
+    @staticmethod
+    def get(self, request):
+        return render(request, 'register')
 
-    def get(self,request):
-        return render(request,'register')
-    
-    def post(self,request):
+    @staticmethod
+    def post(self, request):
         data = request.POST
         user_type = data.get('user_type')
         cardID = data.get('cardID')
@@ -23,36 +24,40 @@ class RegisterView(View):
         password = data.get('password')
         email = data.get('email')
         mobile = data.get('mobile')
-        #teacher_info = data.get('teacher_info')
-        #grade = data.get('grade')
-        print(user_type,cardID,name,password,email,mobile)
-        #判断参数齐全
-        if not all([cardID,name,password,email,mobile]):
-            return HttpResponseBadRequest("缺少注册信息")
+        print(user_type, cardID, name, password, email, mobile)
+        response = {}
+        if not all([cardID, name, password, email, mobile]):
+            response['msg'] = "缺少注册信息"
+            return JsonResponse(response)
         try:
-            user = User.objects.create_user(user_type=user_type,username=cardID,name=name,password=password,email=email,mobile=mobile)
+            user = User.objects.create_user(user_type=user_type, username=cardID, name=name, password=password, email=email, mobile=mobile)
             if user_type == 'S':
                 print('create student')
                 grade = data.get('grade')
-                Student.objects.create(user=user,grade=grade)
+                Student.objects.create(user=user, grade=grade)
             elif user_type == 'T':
                 print('create teacher')
                 teacher_info = data.get('teacher_info')
                 institute = data.get('institute')
-                Teacher.objects.create(user=user,teacher_info=teacher_info,institute=institute)
+                Teacher.objects.create(user=user, teacher_info=teacher_info, institute=institute)
             elif user_type == 'A':
                 print('create assistant')
                 grade = data.get('grade')
-                Assistant.objects.create(user=user,grade=grade)
-            return HttpResponse("注册成功")
+                Assistant.objects.create(user=user, grade=grade)
+            response['msg'] = 'ok'
+            return JsonResponse(response)
         except Exception as e:
             print(e)
-            return HttpResponseBadRequest("注册失败")
-    
-class LoginView(View):
-    def get(self,request):
-        return render(request,'login.html')
+            response['msg'] = e
+            return JsonResponse(response)
 
+
+class LoginView(View):
+    @staticmethod
+    def get(self, request):
+        return render(request, 'login.html')
+
+    @staticmethod
     def post(self, request):
         response = {}
         data = request.POST
@@ -62,7 +67,7 @@ class LoginView(View):
         if not all([cardID, password]):
             response['msg'] = '缺少请求参数'
             return JsonResponse(response)
-        
+
         user = authenticate(username=cardID, password=password)
         if user is None:
             response['msg'] = '用户名或密码错误'
@@ -76,17 +81,10 @@ class LoginView(View):
         elif user.user_type == 'A':
             response['user_type'] = 'A'
         return JsonResponse(response)
-        '''
-        if user.user_type == 'S':
-            return redirect('/student_center')
-        elif user.user_type == 'T':
-            return redirect('/teacher_center')
-        elif user.user_type == 'A':
-            return redirect('/assistant_center')
-        '''
-        return HttpResponse('无关？？')
+
 
 class LogoutView(View):
+    @staticmethod
     def get(self, request):
         logout(request)
         return HttpResponseRedirect(reverse("login"))

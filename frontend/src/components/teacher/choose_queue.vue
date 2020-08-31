@@ -1,0 +1,9 @@
+<template>
+  <div>
+    <el-container>
+      <el-main>
+        choose_queue
+      </el-main>
+    </el-container>
+  </div>
+</template>
