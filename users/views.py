@@ -11,12 +11,14 @@ class RegisterView(View):
     """
     用户注册接口
     """
-    @staticmethod
+
     def get(self, request):
+        print("visit register")
         return render(request, 'register')
 
-    @staticmethod
+
     def post(self, request):
+        print("post register")
         data = request.POST
         user_type = data.get('user_type')
         cardID = data.get('cardID')
@@ -53,11 +55,11 @@ class RegisterView(View):
 
 
 class LoginView(View):
-    @staticmethod
+
     def get(self, request):
         return render(request, 'login.html')
 
-    @staticmethod
+
     def post(self, request):
         response = {}
         data = request.POST
