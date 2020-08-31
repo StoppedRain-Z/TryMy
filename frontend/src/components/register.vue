@@ -71,10 +71,15 @@ export default {
       this.$http
         .post('register/', this.registerData)
         .then(result => {
-          console.log(result.body);
-          alert(result.body)
-          if(result.body === "注册成功")
+          console.log(result.body.msg);
+          if(result.body.msg === 'ok'){
+            alert("注册成功")
             this.$router.push({path:'/login'})
+          }else if(result.body.msg === "缺少注册信息"){
+            alert(result.body.msg)
+          }else{
+            alert("注册失败，该用户可能已经注册过")
+          }
           /*if(result.body.msg === 'ok'){
             alert("注册成功");
             this.$router.push({path:'/login'})
