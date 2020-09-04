@@ -128,7 +128,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-#STATICFILES_DIRS = ((os.path.join(BASE_DIR,'static')),)
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "frontend/dist/static"),
 ]
+
+# 发送邮件设置
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.126.com'  # 发送邮件的服务器地址
+EMAIL_HOST_USER = 'zhangrt20'
+EMAIL_HOST_PASSWORD = 'Zrt@971221'
+EMAIL_PORT = 25
+DEFAULT_FROM_EMAIL = 'zhangrt20@126.com'  # 设置默认的发件人

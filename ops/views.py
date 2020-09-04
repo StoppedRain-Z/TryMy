@@ -3,6 +3,7 @@ from django.views import View
 from .models import *
 from django.http import JsonResponse,HttpResponse,HttpResponseBadRequest
 import json
+from django.core.mail import send_mail
 # Create your views here.
 
 
@@ -127,6 +128,25 @@ def op_s(request, student_choice):
 
 def create_progress(request):
     data = request.POST
+    title = data.get('title')
+    desc = data.get('desc')
+    start_time = data.get('start_time')
+    end_time = data.get('end_time')
+    student_list = Student.objects.all()
+    response = {}
+    email_list = []
+    for student in student_list:
+        try:
+            progress = Progress.objects.create(student=student, title=title, desc=desc)
+            email_list.append(student.user.email)
+        except Exception as e:
+            print(e)
+            response['msg'] = e
+            return JsonResponse(response)
+    print('send email start')
+    # send_mail(title, desc, 'zhangrt20@126.com', email_list, fail_silently=False)
+    print('send email end')
+
 
 
 

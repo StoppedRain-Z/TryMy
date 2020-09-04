@@ -50,7 +50,7 @@ class RegisterView(View):
             return JsonResponse(response)
         except Exception as e:
             print(e)
-            response['msg'] = e
+            response['msg'] = str(e)
             return JsonResponse(response)
 
 
