@@ -4,8 +4,8 @@ from users.models import *
 
 
 class Choose(models.Model):
-    student = models.ForeignKey(Student,on_delete=models.CASCADE)
-    teacher = models.ForeignKey(Teacher,on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True)
     CHOICES = (
         (1, 'unconfirmed'),  # 未确认
         (2, 'confirmed'),    # 已确认
@@ -20,6 +20,7 @@ class Progress(models.Model):
     desc = models.TextField(default='')
     start_time = models.DateField()
     end_time = models.DateField()
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True)
     student_text = models.TextField(default='')
     teacher_text = models.TextField(default='')
+

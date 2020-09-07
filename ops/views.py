@@ -23,6 +23,20 @@ def assistant_center(requests):
     return render(requests, 'assistant_center')
 
 
+def s_list(request):
+    teacher_list = Teacher.objects.all()
+    json_list = []
+    for teacher in teacher_list:
+        json_item = {"teacher_name": teacher.user.name,
+                     "teacher_institute": teacher.institute,
+                     "teacher_info": teacher.teacher_info}
+
+        json_list.append(json_item)
+    print(json_list)
+    # return render("student_choose.html", json.dumps(json_list))
+    return JsonResponse(json.dumps(json_list), safe=False)
+
+
 class S_Choice(View):
 
     @staticmethod
@@ -141,11 +155,24 @@ def create_progress(request):
             email_list.append(student.user.email)
         except Exception as e:
             print(e)
-            response['msg'] = e
+            response['msg'] = str(e)
             return JsonResponse(response)
     print('send email start')
     # send_mail(title, desc, 'zhangrt20@126.com', email_list, fail_silently=False)
     print('send email end')
+
+
+def s_progress_list_finished(request):
+    user = request.user
+    student = Student.objects.find(user=user)
+    response = {}
+    if student is None:
+        response['msg'] = 'user does not found'
+        return JsonResponse(response)
+    progress_list = Progress.objects.filter(student=student,)
+
+
+    progress_list = Progress.objects.filter()
 
 
 
