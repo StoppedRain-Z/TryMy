@@ -16,11 +16,15 @@ class Choose(models.Model):
 
 
 class Progress(models.Model):
+    unique_id = models.IntegerField(unique=True,default=1)
     title = models.CharField(max_length=256, default='')
     desc = models.TextField(default='')
     start_time = models.DateField()
     end_time = models.DateField()
     student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True)
     student_text = models.TextField(default='')
     teacher_text = models.TextField(default='')
+    student_ok = models.BooleanField(default=False)
+    teacher_ok = models.BooleanField(default=False)
 

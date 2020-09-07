@@ -3,6 +3,9 @@ from django.views import View
 from .models import *
 from django.http import HttpResponse
 import json
+from django.utils import timezone
+from datetime import datetime
+from django.db.models import Q
 from django.core.mail import send_mail
 # Create your views here.
 
@@ -26,7 +29,7 @@ def assistant_center(requests):
 class S_Choice(View):
 
     @staticmethod
-    def get(self):
+    def get(request):
         teacher_list = Teacher.objects.all()
         json_list = []
         for teacher in teacher_list:
@@ -37,11 +40,12 @@ class S_Choice(View):
             json_list.append(json_item)
         print(json_list)
         return HttpResponse(json.dumps(json_list))
-    
-    def post(self):
-        data = self.request.POST
+
+    @staticmethod
+    def post(request):
+        data = request.POST
         teacher_list = data.get['teacher_list']
-        user = self.request.user
+        user = request.user
         student = Student.objects.get(user=user)
         for teacher in teacher_list:
             t = Teacher.objects.get(cardID=teacher)
@@ -51,7 +55,7 @@ class S_Choice(View):
 
 class T_Choice(View):
     @staticmethod
-    def get(self):
+    def get(request):
         student_list = Student.objects.all()
         json_list = []
         for student in student_list:
@@ -61,10 +65,11 @@ class T_Choice(View):
         print(json_list)
         return HttpResponse(json.dumps(json_list))
 
-    def post(self):
-        data = self.request.POST
+    @staticmethod
+    def post(request):
+        data = request.POST
         student_list = data.get['student_list']
-        user = self.request.user
+        user = request.user
         teacher = Teacher.objects.get(user=user)
         for student in student_list:
             s = Student.objects.get(cardID=student)
@@ -97,7 +102,7 @@ def confirm_list_t(request, teacher_choice):
 def op_t(request, teacher_choice):
     user = request.user
     teacher = Teacher.objects.get(user=user)
-    card_id = request.POST.get('cardID')
+    card_id = request.POST.get['cardID']
     usr = User.objects.get(cardID=card_id)
     student = Student.objects.get(user=usr)
     choose = Choose.objects.get(teacher=teacher, student=student)
@@ -112,7 +117,7 @@ def op_t(request, teacher_choice):
 def op_s(request, student_choice):
     user = request.user
     student = Student.objects.get(user=user)
-    card_id = request.POST.get('cardID')
+    card_id = request.POST.get['cardID']
     usr = User.objects.get(cardID=card_id)
     teacher = Teacher.objects.get(user=usr)
     choose = Choose.objects.get(teacher=teacher, student=student)
@@ -126,17 +131,20 @@ def op_s(request, student_choice):
 
 def create_progress(request):
     data = request.POST
-    title = data.get('title')
-    desc = data.get('desc')
-    start_time = data.get('start_time')
-    end_time = data.get('end_time')
+    title = data.get['title']
+    desc = data.get['desc']
+    start_time = data.get['start_time']
+    end_time = data.get['end_time']
     student_list = Student.objects.all()
+    length = Progress.objects.all().count()
     response = {}
     email_list = []
     for student in student_list:
         try:
-            progress = Progress.objects.create(student=student, title=title, desc=desc)
+            teacher = student.teacher
+            progress = Progress.objects.create(unique_id=length, student=student, teacher=teacher, title=title, desc=desc)
             email_list.append(student.user.email)
+            length = length + 1
         except Exception as e:
             print(e)
             response['msg'] = str(e)
@@ -146,6 +154,23 @@ def create_progress(request):
     print('send email end')
 
 
+def s_progress_list_unfinished(request):
+    user = request.user
+    student = Student.objects.find(user=user)
+    response = {}
+    if student is None:
+        response['msg'] = 'user does not found'
+        return HttpResponse(response)
+    # time_now = timezone.now()
+    now = datetime.now()
+    progress_list = Progress.objects.filter(student=student, student_ok=False, start_time__lt=now, end_time__gt=now)
+    res = []
+    for progress in progress_list:
+        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time, 'end_time': progress.end_time}
+        res.append(json_item)
+    return HttpResponse(json.dumps(res))
+
+
 def s_progress_list_finished(request):
     user = request.user
     student = Student.objects.find(user=user)
@@ -153,12 +178,115 @@ def s_progress_list_finished(request):
     if student is None:
         response['msg'] = 'user does not found'
         return HttpResponse(response)
-    progress_list = Progress.objects.filter(student=student, student_text='')
+    # time_now = timezone.now()
+    now = datetime.now()
+    progress_list = Progress.objects.filter(student=student, student_ok=True, teacher_ok=False)
+    res = []
+    for progress in progress_list:
+        json_item = {'id': progress.unique_id, 'title': progress.title,
+                     'end_time': progress.end_time, 'status': '导师未回复'}
+        res.append(json_item)
+    progress_list = Progress.objects.filter(student=student, student_ok=True, teacher_ok=True)
+    for progress in progress_list:
+        json_item = {'id': progress.unique_id, 'title': progress.title,
+                     'end_time': progress.end_time, 'status': '已完成'}
+        res.append(json_item)
+    now = datetime.now()
+    progress_list = Progress.objects.filter(student=student, student_ok=False, end_time__lt=now)
+    for progress in progress_list:
+        json_item = {'id': progress.unique_id, 'title': progress.title,
+                     'end_time': progress.end_time, 'status': '已失效'}
+        res.append(json_item)
+    return HttpResponse(json.dumps(res))
 
 
+class S_Progress_Detail(View):
+    @staticmethod
+    def get(request):
+        id = request.GET.get['id']
+        user = request.user
+        try:
+            student = Student.objects.get(user=user)
+            progress = Progress.objects.get(unique_id=id,student=student)
+            response = {'title': progress.title, 'desc': progress.desc, 'start_time': progress.start_time,
+                        'end_time': progress.end_time, 'student_text': progress.student_text,
+                        'teacher_text': progress.teacher_text}
+            return HttpResponse(json.dumps(response))
+        except Exception as e:
+            response = {'msg': str(e)}
+            return HttpResponse(response)
+
+    @staticmethod
+    def post(request):
+        data = request.POST
+        student_text = data.get['student_text']
+        id = data.get['id']
+        user = request.user
+        try:
+            student = Student.objects.get(user=user)
+            progress = Progress.objects.get(unique_id=id, student=student)
+            progress.student_text = student_text
+            progress.student_ok = True
+            progress.save()
+            response = {'msg': 'ok'}
+            return HttpResponse(response)
+        except Exception as e:
+            response = {'msg': str(e)}
+            return HttpResponse(response)
 
 
+class S_Progress_Detail(View):
+    @staticmethod
+    def get(request):
+        id = request.GET.get['id']
+        user = request.user
+        try:
+            teacher = Teacher.objects.get(user=user)
+            progress = Progress.objects.get(unique_id=id, teacher=teacher)
+            response = {'title': progress.title, 'desc': progress.desc, 'start_time': progress.start_time,
+                        'end_time': progress.end_time, 'student_text': progress.student_text,
+                        'teacher_text': progress.teacher_text}
+            return HttpResponse(json.dumps(response))
+        except Exception as e:
+            response = {'msg': str(e)}
+            return HttpResponse(response)
 
+    @staticmethod
+    def post(request):
+        data = request.POST
+        teacher_text = data.get['teacher_text']
+        id = data.get['id']
+        user = request.user
+        try:
+            teacher = Teacher.objects.get(user=user)
+            progress = Progress.objects.get(unique_id=id, teacher=teacher)
+            progress.teacher = teacher_text
+            progress.teacher_ok = True
+            progress.save()
+            response = {'msg': 'ok'}
+            return HttpResponse(response)
+        except Exception as e:
+            response = {'msg': str(e)}
+            return HttpResponse(response)
+
+
+def t_progress_list_unfinished(request):
+    user = request.user
+    teacher = Teacher.objects.find(user=user)
+    response = {}
+    if teacher is None:
+        response['msg'] = 'user does not found'
+        return HttpResponse(response)
+    # time_now = timezone.now()
+    now = datetime.now()
+    progress_list = Progress.objects.filter(teacher=teacher, student_ok=True, teacher_ok=False, start_time__lt=now, end_time__gt=now)
+    res = []
+    for progress in progress_list:
+        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
+                     'end_time': progress.end_time, 'msg': '未回执'}
+        res.append(json_item)
+    progress_list = Progress.objects.filter(teacher=teacher, student_ok=False, teacher_ok=False)
+    return HttpResponse(json.dumps(res))
 
 
 
