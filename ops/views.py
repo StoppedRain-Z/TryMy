@@ -59,7 +59,6 @@ class T_Choice(View):
 
             json_list.append(json_item)
         print(json_list)
-        # return render("student_choose.html", json.dumps(json_list))
         return HttpResponse(json.dumps(json_list))
 
     def post(self):
@@ -141,7 +140,7 @@ def create_progress(request):
         except Exception as e:
             print(e)
             response['msg'] = str(e)
-            return JsonResponse(response)
+            return HttpResponse(response)
     print('send email start')
     # send_mail(title, desc, 'zhangrt20@126.com', email_list, fail_silently=False)
     print('send email end')
@@ -153,7 +152,7 @@ def s_progress_list_finished(request):
     response = {}
     if student is None:
         response['msg'] = 'user does not found'
-        return JsonResponse(response)
+        return HttpResponse(response)
     progress_list = Progress.objects.filter(student=student, student_text='')
 
 
