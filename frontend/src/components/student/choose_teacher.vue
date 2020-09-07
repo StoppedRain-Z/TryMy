@@ -3,13 +3,26 @@
     <el-container>
       <el-main style="width:100%">
         <div>
-          <el-table ref="multipleTable" :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
-            <el-form method="post">
-              <el-table-column type="selection" width="55"></el-table-column>
-              <el-table-column prop="name" label="姓名" width="120"></el-table-column>
-              <el-table-column prop="institute" label="研究所" width="120"></el-table-column>
-              <el-table-column prop="teacher_info" label="个人主页" show-overflow-tooltip></el-table-column>
-            </el-form>
+          <el-table 
+            ref="multipleTable" 
+            :data="tables" 
+            style="width: 100%" 
+            tooltip-effect="dark"
+            @selection-change="handleSelectionChange">
+            
+              <el-table-column type="selection" width="45px"></el-table-column>
+              <el-table-column label="序号" style="width:5%" type="index"></el-table-column>
+              <template v-for='(col) in tableData'>
+                <el-table-column
+                  sortable
+                  :show-overflow-tooltip="true"
+                  :prop="col.dataItem"
+                  :label="col.dataName"
+                  :key="col.dataItem"
+                  style="width:90%">
+                </el-table-column>
+              </template>
+           
           </el-table>
           <el-button type="primary" @click="commit">提交</el-button>
         </div>
@@ -22,15 +35,25 @@
 export default {
   data () {
     return {
-      tableData: []
+      tables:[{'teacher_name': '123456', 'teacher_institute': '图所', 'teacher_info': '123456'}],
+      tableData:[{
+        dataItem:'teacher_name',
+        dataName:'姓名'
+      },{
+        dataItem:'teacher_institute',
+        dataName:'研究所'
+      },{
+        dataItem:'teacher_info',
+        dataName:'个人主页'
+      }]
     }
   },
   methods: {
     getData () {
       this.$http.get('/student_center/choose_teacher').then(result => {
-        console.log(result.body)
-        this.tableData = result.body
-        console.log(result.body)
+        //console.log(result.body)
+        this.tables = result.body
+        console.log(this.tables)
       })
     },
     commit () {
@@ -44,7 +67,7 @@ export default {
     }
   },
   created () {
-    this.getData()
+    //this.getData()
   }
 }
 </script>
