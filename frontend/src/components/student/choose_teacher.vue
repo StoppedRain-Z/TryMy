@@ -43,7 +43,7 @@ export default {
       this.$http
         .get('student_center/choose_teacher')
         .then(result => {
-          this.tables = JSON.parse(result.body)
+          this.tables = result.body
         })
     },
     commit () {

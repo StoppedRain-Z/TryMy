@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, reverse
 from django.views import View
 from .models import *
-from django.http import JsonResponse,HttpResponse,HttpResponseBadRequest
+from django.http import HttpResponse
 import json
 from django.core.mail import send_mail
 # Create your views here.
@@ -23,20 +23,6 @@ def assistant_center(requests):
     return render(requests, 'assistant_center')
 
 
-def s_list(request):
-    teacher_list = Teacher.objects.all()
-    json_list = []
-    for teacher in teacher_list:
-        json_item = {"teacher_name": teacher.user.name,
-                     "teacher_institute": teacher.institute,
-                     "teacher_info": teacher.teacher_info}
-
-        json_list.append(json_item)
-    print(json_list)
-    # return render("student_choose.html", json.dumps(json_list))
-    return JsonResponse(json.dumps(json_list), safe=False)
-
-
 class S_Choice(View):
 
     @staticmethod
@@ -50,8 +36,7 @@ class S_Choice(View):
 
             json_list.append(json_item)
         print(json_list)
-        # return render("student_choose.html", json.dumps(json_list))
-        return JsonResponse(json.dumps(json_list), safe=False)
+        return HttpResponse(json.dumps(json_list))
     
     def post(self):
         data = self.request.POST
@@ -75,7 +60,7 @@ class T_Choice(View):
             json_list.append(json_item)
         print(json_list)
         # return render("student_choose.html", json.dumps(json_list))
-        return JsonResponse(json.dumps(json_list), safe=False)
+        return HttpResponse(json.dumps(json_list))
 
     def post(self):
         data = self.request.POST
@@ -169,10 +154,8 @@ def s_progress_list_finished(request):
     if student is None:
         response['msg'] = 'user does not found'
         return JsonResponse(response)
-    progress_list = Progress.objects.filter(student=student,)
+    progress_list = Progress.objects.filter(student=student, student_text='')
 
-
-    progress_list = Progress.objects.filter()
 
 
 
