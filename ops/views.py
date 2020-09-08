@@ -56,11 +56,11 @@ class S_Choice(View):
 class T_Choice(View):
     @staticmethod
     def get(request):
-        student_list = Student.objects.all()
+        teacher = request.user.teacher
+        choose_list = Choose.objects.filter(teacher=teacher, student_choice=2)
         json_list = []
-        for student in student_list:
-            json_item = {"cardID": student.user.username, "name": student.user.name}
-
+        for choose in choose_list:
+            json_item = {"student_id": choose.student.user.username, "name": choose.student.user.name}
             json_list.append(json_item)
         print(json_list)
         return HttpResponse(json.dumps(json_list))
@@ -68,13 +68,19 @@ class T_Choice(View):
     @staticmethod
     def post(request):
         data = request.POST
-        student_list = data.get['student_list']
-        user = request.user
-        teacher = Teacher.objects.get(user=user)
-        for student in student_list:
-            s = Student.objects.get(cardID=student)
-            Choose.objects.create(student=s, teacher=teacher, teacher_choice=2, student_choice=1)
-        return HttpResponse('ok')
+        student_id = data.get['student_id']
+        choice = data.get['choice']
+        response = {}
+        teacher = request.user.teacher
+        count = teacher.Student_set().all().count()
+        if count < teacher.max_student:
+            student = User.objects.get(username=student_id).student
+            Choose.objects.create(student=student, teacher=teacher, teacher_choice=2, student_choice=choice)
+            response['msg'] = 'ok'
+            return HttpResponse(response)
+        else:
+            response['msg'] = 'more than max'
+            return HttpResponse(response)
 
 
 def confirm_list_s(request):
@@ -83,8 +89,16 @@ def confirm_list_s(request):
     choose_list = Choose.objects.filter(student=student, student_choice=2)
     json_list = []
     for choose in choose_list:
+        teacher_choice = choose.teacher_choice
+        choice = ''
+        if teacher_choice == 1:
+            choice = '未确认'
+        elif teacher_choice == 2:
+            choice = '已确认'
+        elif teacher_choice == 3:
+            choice = '拒绝'
         json_item = {"name": choose.teacher.user.name, "teacher_id": choose.teacher.user.username,
-                     "teacher_choice": choose.teacher_choice, "teacher_info": choose.teacher.teacher_info}
+                     "teacher_choice": choice, "teacher_info": choose.teacher.teacher_info}
         json_list.append(json_item)
     return HttpResponse(json.dumps(json_list))
 
@@ -100,11 +114,12 @@ def confirm_list_t(request, teacher_choice):
     return HttpResponse(json.dumps(json_list))
 
 
-def op_t(request, teacher_choice):
+def op_t(request):
     user = request.user
     teacher = Teacher.objects.get(user=user)
     card_id = request.POST.get['cardID']
-    usr = User.objects.get(cardID=card_id)
+    teacher_choice = request.POST.get['teacher_choice']
+    usr = User.objects.get(username=card_id)
     student = Student.objects.get(user=usr)
     choose = Choose.objects.get(teacher=teacher, student=student)
     choose.teacher_choice = teacher_choice
@@ -119,7 +134,7 @@ def op_s(request, student_choice):
     user = request.user
     student = Student.objects.get(user=user)
     card_id = request.POST.get['cardID']
-    usr = User.objects.get(cardID=card_id)
+    usr = User.objects.get(username=card_id)
     teacher = Teacher.objects.get(user=usr)
     choose = Choose.objects.get(teacher=teacher, student=student)
     choose.student_choice = student_choice
@@ -340,6 +355,38 @@ def a_progress_list_finished(request):
     res.sort(key=lambda k: k['start_time'], reverse=True)
     print(res)
     return HttpResponse(json.dumps(res))
+
+
+def a_progress_list_unfinished(request):
+    teacher_list = Teacher.objects.all()
+    now = datetime.now()
+    res = []
+    for teacher in teacher_list:
+        progress_list = Progress.objects.filter(Q(teacher_ok=False) | Q(student_ok=False), teacher=teacher,
+                                                start_time__lt=now, end_time__gt=now)
+        for progress in progress_list:
+            json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
+                         'end_time': progress.end_time, 'msg': '未完成'}
+            res.append(json_item)
+    res.sort(key=lambda k: k['start_time'], reverse=True)
+    print(res)
+    return HttpResponse(json.dumps(res))
+
+
+def progress_detail(request):
+    id = request.GET.get['id']
+    try:
+        progress = Progress.objects.get(unique_id=id)
+        response = {'msg': 'ok', 'title': progress.title, 'desc': progress.desc,
+                    'student_name': progress.student.user.name, 'student_text': progress.student_text,
+                    'teacher_name': progress.teacher.user.name, 'teacher_text': progress.teacher_text}
+        return HttpResponse(response)
+    except Exception as e:
+        response = {'msg': str(e)}
+        return HttpResponse(response)
+
+
+
 
 
 
