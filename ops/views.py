@@ -45,11 +45,10 @@ class S_Choice(View):
     @staticmethod
     def post(request):
         data = request.POST
-        teacher_id = data.get['teacher_id']
+        teacher_id = data.get('teacher_id')
         user = request.user
         student = Student.objects.get(user=user)
-
-        teacher = Teacher.objects.get(cardID=teacher_id)
+        teacher = User.objects.get(username=teacher_id).teacher
         Choose.objects.create(student=student, teacher=teacher, teacher_choice=1, student_choice=2)
         return HttpResponse('ok')
 
@@ -78,13 +77,14 @@ class T_Choice(View):
         return HttpResponse('ok')
 
 
-def confirm_list_s(request, student_choice):
+def confirm_list_s(request):
     user = request.user
     student = Student.objects.get(user=user)
-    choose_list = Choose.objects.filter(student=student, student_choice=student_choice)
+    choose_list = Choose.objects.filter(student=student, student_choice=2)
     json_list = []
     for choose in choose_list:
-        json_item = {"name": choose.teacher.user.name, "teacher_info": choose.teacher.teacher_info}
+        json_item = {"name": choose.teacher.user.name, "teacher_id": choose.teacher.user.username,
+                     "teacher_choice": choose.teacher_choice, "teacher_info": choose.teacher.teacher_info}
         json_list.append(json_item)
     return HttpResponse(json.dumps(json_list))
 
