@@ -35,7 +35,8 @@ class S_Choice(View):
         for teacher in teacher_list:
             json_item = {"teacher_name": teacher.user.name,
                          "teacher_institute": teacher.institute,
-                         "teacher_info": teacher.teacher_info}
+                         "teacher_info": teacher.teacher_info,
+                         "teacher_id": teacher.user.username}
 
             json_list.append(json_item)
         print(json_list)
@@ -44,12 +45,12 @@ class S_Choice(View):
     @staticmethod
     def post(request):
         data = request.POST
-        teacher_list = data.get['teacher_list']
+        teacher_id = data.get['teacher_id']
         user = request.user
         student = Student.objects.get(user=user)
-        for teacher in teacher_list:
-            t = Teacher.objects.get(cardID=teacher)
-            Choose.objects.create(student=student,teacher=t,teacher_choice=1,student_choice=2)
+
+        teacher = Teacher.objects.get(cardID=teacher_id)
+        Choose.objects.create(student=student, teacher=teacher, teacher_choice=1, student_choice=2)
         return HttpResponse('ok')
 
 
@@ -235,7 +236,7 @@ class S_Progress_Detail(View):
             return HttpResponse(response)
 
 
-class S_Progress_Detail(View):
+class T_Progress_Detail(View):
     @staticmethod
     def get(request):
         id = request.GET.get['id']
@@ -279,14 +280,70 @@ def t_progress_list_unfinished(request):
         return HttpResponse(response)
     # time_now = timezone.now()
     now = datetime.now()
-    progress_list = Progress.objects.filter(teacher=teacher, student_ok=True, teacher_ok=False, start_time__lt=now, end_time__gt=now)
+    progress_list = Progress.objects.filter(teacher=teacher, student_ok=True, teacher_ok=False,
+                                            start_time__lt=now, end_time__gt=now)
     res = []
     for progress in progress_list:
         json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
                      'end_time': progress.end_time, 'msg': '未回执'}
         res.append(json_item)
-    progress_list = Progress.objects.filter(teacher=teacher, student_ok=False, teacher_ok=False)
+    progress_list = Progress.objects.filter(teacher=teacher, student_ok=False, teacher_ok=False,
+                                            start_time__lt=now, end_time__gt=now)
+    for progress in progress_list:
+        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
+                     'end_time': progress.end_time, 'msg': '学生未回复'}
+        res.append(json_item)
     return HttpResponse(json.dumps(res))
+
+
+def t_progress_list_finished(request):
+    user = request.user
+    teacher = Teacher.objects.find(user=user)
+    response = {}
+    if teacher is None:
+        response['msg'] = 'user does not found'
+        return HttpResponse(response)
+    # time_now = timezone.now()
+    now = datetime.now()
+    progress_list = Progress.objects.filter(teacher=teacher, student_ok=True, teacher_ok=True)
+    res = []
+    for progress in progress_list:
+        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
+                     'end_time': progress.end_time, 'msg': '已完成'}
+        res.append(json_item)
+    progress_list = Progress.objects.filter(Q(student_ok=False) | Q(teacher_ok=False),teacher=teacher,
+                                            end_time__lt=now)
+    for progress in progress_list:
+        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
+                     'end_time': progress.end_time, 'msg': '已过期'}
+        res.append(json_item)
+    return HttpResponse(json.dumps(res))
+
+
+def a_progress_list_finished(request):
+    teacher_list = Teacher.objects.all()
+    response = {}
+    now = datetime.now()
+    res = []
+    for teacher in teacher_list:
+        progress_list = Progress.objects.filter(teacher=teacher, student_ok=True, teacher_ok=True)
+        for progress in progress_list:
+            json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
+                         'end_time': progress.end_time, 'msg': '已完成'}
+            res.append(json_item)
+        progress_list = Progress.objects.filter(Q(student_ok=False) | Q(teacher_ok=False), teacher=teacher,
+                                                end_time__lt=now)
+        for progress in progress_list:
+            json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
+                         'end_time': progress.end_time, 'msg': '已过期'}
+            res.append(json_item)
+    res.sort(key=lambda k: k['start_time'], reverse=True)
+    print(res)
+    return HttpResponse(json.dumps(res))
+
+
+
+
 
 
 
