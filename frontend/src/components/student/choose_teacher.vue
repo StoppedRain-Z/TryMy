@@ -36,7 +36,8 @@
 export default {
   data () {
     return {
-      radio:'',
+      row:0,
+      radio:{},
       tables: [],
       tableData:[{
         dataItem: 'teacher_name',
@@ -60,17 +61,26 @@ export default {
         })
     },
     commit () {
-      var selectData = this.$refs.multipleTable.selection
+      console.log(this.row)
+      var array = {
+          //"teacher_name": this.tables[this.row].teacher_name,
+          //"teacher_institute": this.tables[this.row].teacher_institute,
+          //"teacher_info": this.tables[this.row].teacher_info,
+          "teacher_id": this.tables[this.row].teacher_id
+        }
+      this.radio = array
       console.log(this.radio)
       this.$http
-        .post('student_center/choose_teacher.', selectData)
+        .post('student_center/choose_teacher/', this.radio)
         .then(result => {
           console.log(result.body)
         })
     },
     changeTeacher(row) {
         console.log(row)
-        console.log(this.tables[row].teacher_name)
+        this.row = row
+        
+        //console.log(this.radio)
         //this.radio = this.tables[row]
     }
   },
