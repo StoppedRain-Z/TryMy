@@ -16,5 +16,4 @@ urlpatterns = [
     path('teacher_center/T_finished/', t_progress_list_finished),
     path('teacher_center/T_unfinished/', t_progress_list_unfinished),
     path('teacher_center/T_detail/', T_Progress_Detail.as_view()),
-    path('assistant_center/')
 ]
