@@ -61,7 +61,19 @@ export default {
     }
   },
   methods: {
-
+    submit() {
+        console.log(this.form)
+        this.$http
+          .post('assistant_center/create_progress', this.form)
+          .then(result => {
+            console.log(result.body)
+            if(result.body === 'ok'){
+              alert("该任务发布成功")
+            }else{
+              alert("未知错误，请重新发布")
+            }
+          })
+    }
   }
 }
 </script>
