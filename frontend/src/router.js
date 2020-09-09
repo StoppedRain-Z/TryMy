@@ -58,8 +58,8 @@ var router = new VueRouter({
         {path: '/create_progress', component: create_progress},
         {path: '/check_progress', component: check_progress},
         {path: '/teacher_to_student', component: teacher_to_student},
-        {path: '/check_progress/progress_student', component: progress_student},
-        {path: '/check_progress/progress_student/progress_student_detail', component: progress_student_detail}
+        {path: '/progress_student', component: progress_student},
+        {path: '/progress_student_detail', component: progress_student_detail}
       ]
     }
   ]

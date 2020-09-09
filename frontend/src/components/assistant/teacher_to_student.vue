@@ -40,27 +40,26 @@ export default {
           "student_name": '13'
           }],
       tableData:[{
-        dataItem: 'teacher_name',
-        dataName: '教师姓名'
-      },{
         dataItem: 'student_name',
         dataName: '学生姓名'
+      },{
+        dataItem: 'teacher_name',
+        dataName: '教师姓名'
       }]
     }
   },
   methods: {
     getData() {
       this.$http
-        .get('assistant/teacher_to_student')
+        .get('assistant_center/teacher_to_student')
         .then(result => {
           this.tables = result.body
-          
         }) 
     }
-  }//,
-  //created () {
-   // this.getData()
- // }
+  },
+  created () {
+    this.getData()
+  }
 }
 
 </script>
