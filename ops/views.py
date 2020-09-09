@@ -58,7 +58,7 @@ class T_Choice(View):
     def get(request):
         print("lalala")
         teacher = request.user.teacher
-        choose_list = Choose.objects.filter(teacher=teacher, student_choice=2)
+        choose_list = Choose.objects.filter(teacher=teacher, student_choice=2, teacher_choice=1)
         json_list = []
         for choose in choose_list:
             json_item = {"student_id": choose.student.user.username, "name": choose.student.user.name}
@@ -75,12 +75,16 @@ class T_Choice(View):
         response = {}
         teacher = request.user.teacher
         count = teacher.student_set.all().count()
+        student = User.objects.get(username=student_id).student
+        choose = Choose.objects.get(student=student, teacher=teacher)
         if count < teacher.max_student:
-            student = User.objects.get(username=student_id).student
-            Choose.objects.create(student=student, teacher=teacher, teacher_choice=2, student_choice=choice)
+            choose.teacher_choice = choice
+            choose.save()
             response['msg'] = 'ok'
             return HttpResponse(response)
         else:
+            choose.teacher_choice = 3
+            choose.save()
             response['msg'] = 'more than max'
             return HttpResponse(response)
 
