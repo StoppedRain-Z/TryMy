@@ -39,10 +39,10 @@ var router = new VueRouter({
       component: teacher_center,
       children: [
         {path: '', component: center},
-        {path: 'choose_student', component: choose_student},
-        {path: 'choose_queue', component: choose_queue_T},
-        {path: 'T_unfinished', component: T_unfinished},
-        {path: 'T_finished', component: T_finished}
+        {path: '/choose_student', component: choose_student},
+        {path: '/choose_queue_T', component: choose_queue_T},
+        {path: '/T_unfinished', component: T_unfinished},
+        {path: '/T_finished', component: T_finished}
       ]
     },
     {
@@ -50,8 +50,8 @@ var router = new VueRouter({
       component: assistant_center,
       children: [
         {path: '', component: center},
-        {path: 'create_progress', component: create_progress},
-        {path: 'check_progress', component: check_progress}
+        {path: '/create_progress', component: create_progress},
+        {path: '/check_progress', component: check_progress}
       ]
     }
   ]

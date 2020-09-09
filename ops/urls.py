@@ -15,6 +15,5 @@ urlpatterns = [
     path('teacher_center/choose_queue/', confirm_list_t),
     path('teacher_center/T_finished/', t_progress_list_finished),
     path('teacher_center/T_unfinished/', t_progress_list_unfinished),
-    path('teacher_center/T_detail/', T_Progress_Detail.as_view()),
-    path('assistant_center/')
+    path('teacher_center/T_detail/', T_Progress_Detail.as_view())
 ]

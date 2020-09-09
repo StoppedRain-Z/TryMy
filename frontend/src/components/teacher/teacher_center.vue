@@ -5,8 +5,8 @@
         <el-menu :default-openeds="['1', '2']" router>
           <el-submenu index="1">
             <template slot="title"><i class="el-icon-message"></i>填报情况查看</template>
-            <el-menu-item index="choose_student">未完成选择</el-menu-item>
-            <el-menu-item index="choose_queue_T">已完成选择</el-menu-item>
+            <el-menu-item index="choose_student">未完成确认</el-menu-item>
+            <el-menu-item index="choose_queue_T">已完成确认</el-menu-item>
           </el-submenu>
           <el-submenu index="2">
             <template slot="title"><i class="el-icon-menu"></i>毕设进度查看</template>

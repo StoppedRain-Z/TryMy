@@ -74,6 +74,11 @@ export default {
         .post('student_center/choose_teacher/', this.radio)
         .then(result => {
           console.log(result.body)
+          if(result.body === "ok"){
+            alert("加入已选志愿")
+          }else{
+            alert("请重新选择")
+          }
         })
     },
     changeTeacher(row) {

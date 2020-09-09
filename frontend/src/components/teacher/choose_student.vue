@@ -7,20 +7,23 @@
             :data = "tables"
             ref = "multipleTable"
             tooltip-effect="dark"
-            style="width:100%"
-            @selection-change='selectArInfo'>
-          <el-table-column type="selection" width="45px"></el-table-column>
-          <el-table-column label="序号" width="62px" type="index"></el-table-column>
+            style="width:100%">
+          <el-table-column label="序号" style="width:10%" type="index"></el-table-column>
           <template v-for='(col) in tableData'>
             <el-table-column
-              sortable
               :show-overflow-tooltip="true"
               :prop="col.dataItem"
               :label="col.dataName"
               :key="col.dataItem"
-              width="124px">
+              style="width:80%">
             </el-table-column>
           </template>
+          <el-table-column label="操作" style="width:10%" align="center">
+            <template slot-scope="scope">
+              <el-button type="info" @click="agree(scope.row)">同意</el-button>
+              <el-button type="info" @click="disagree(scope.row)">拒绝</el-button>
+            </template>
+          </el-table-column>
           </el-table>
         </div>
       </el-main>
@@ -33,55 +36,49 @@
   export default {
     data () {
       return {
-        tables: [{
-          xiaoxue: '福兰',
-          chuzhong: '加芳',
-          gaozhong: '蒲庙',
-          daxue: '西安',
-          yanjiusheng: '西安',
-          shangban: '北京'
-
-        }, {
-          xiaoxue: '南坊',
-          chuzhong: '礼泉',
-          gaozhong: '礼泉',
-          daxue: '西安',
-          yanjiusheng: '西安',
-          shangban: '南坊'
-        }, {
-          xiaoxue: '马山',
-          chuzhong: '加芳',
-          gaozhong: '蒲庙',
-          daxue: '西安',
-          yanjiusheng: '重庆',
-          shangban: '北京'
-        }],
+        row:0,
+        radio: {},
+        tables:[],
         tableData: [{
-          dataItem: 'xiaoxue',
-          dataName: '小学'
+          dataItem: 'student_id',
+          dataName: '学生证号'
         }, {
-          dataItem: 'chuzhong',
-          dataName: '初中'
-        }, {
-          dataItem: 'gaozhong',
-          dataName: '高中'
-        }, {
-          dataItem: 'daxue',
-          dataName: '大学'
-        }, {
-          dataItem: 'yanjiusheng',
-          dataName: '研究生'
-        }, {
-          dataItem: 'shangban',
-          dataName: '上班'
+          dataItem: 'name',
+          dataName: '姓名'
         }]
       }
     },
     methods: {
-      // 获取表格选中时的数据
-      selectArInfo (val) {
-        this.selectArr = val
+      getData () {
+        this.$http
+          .get('teacher_center/choose_student')
+          .then(result => {
+            console.log(result.body)
+            this.tables = result.body
+          })
+      },
+      agree(row){
+        console.log(row)
+        var array = {
+          "student_id": row.student_id,
+          "choice": 2
+        }
+        console.log(array)
+        this.radio = array
+        this.$http
+          .post('teacher_center/choose_student/', array)
+          .then(result =>{
+            if(result.body.msg === 'ok'){
+              alert("成功确认")
+              
+            }else{
+              alert("请重新选择")
+            }
+          })
       }
+    },
+    created () {
+      this.getData()
     }
   }
 </script>

@@ -56,6 +56,7 @@ class S_Choice(View):
 class T_Choice(View):
     @staticmethod
     def get(request):
+        print("lalala")
         teacher = request.user.teacher
         choose_list = Choose.objects.filter(teacher=teacher, student_choice=2)
         json_list = []
@@ -68,11 +69,12 @@ class T_Choice(View):
     @staticmethod
     def post(request):
         data = request.POST
-        student_id = data.get['student_id']
-        choice = data.get['choice']
+        print(data)
+        student_id = data.get('student_id')
+        choice = data.get('choice')
         response = {}
         teacher = request.user.teacher
-        count = teacher.Student_set().all().count()
+        count = teacher.student_set().all().count()
         if count < teacher.max_student:
             student = User.objects.get(username=student_id).student
             Choose.objects.create(student=student, teacher=teacher, teacher_choice=2, student_choice=choice)
