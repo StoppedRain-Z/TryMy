@@ -68,13 +68,14 @@
         this.$http
           .post('teacher_center/choose_student/', array)
           .then(result =>{
-            console.log(result.body.msg)
-            if(result.body.msg === 'ok'){
+            console.log(result.body)
+            this.getData()
+            if(result.body === 'ok'){
               alert("已同意")
-              this.getData()
+            }else if(result.body === 'max'){
+              alert("您同意的学生已经超过可同意范围，故该学生申请已被拒绝")
             }else{
-              alert("请重新选择")
-              this.getData()
+              alert("该学生已有导师，故该学生申请被拒绝")
             }
           })
       },
@@ -89,9 +90,9 @@
           .post('teacher_center/choose_student/', array)
           .then(result =>{
             console.log(result.body)
+            this.getData()
             if(result.body === 'ok'){
               alert("已拒绝")
-              this.getData()
             }else{
               alert("请重新选择")
               //this.getData()
