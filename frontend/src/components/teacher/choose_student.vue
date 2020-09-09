@@ -20,8 +20,8 @@
           </template>
           <el-table-column label="操作" style="width:10%" align="center">
             <template slot-scope="scope">
-              <el-button type="info" @click="agree(scope.row)">同意</el-button>
-              <el-button type="info" @click="disagree(scope.row)">拒绝</el-button>
+              <el-button type="primary" @click="agree(scope.row)">同意</el-button>
+              <el-button type="primary" @click="disagree(scope.row)">拒绝</el-button>
             </template>
           </el-table-column>
           </el-table>

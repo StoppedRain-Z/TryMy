@@ -19,6 +19,8 @@ import assistant_center from './components/assistant/assistant_center'
 import create_progress from './components/assistant/create_progress'
 import check_progress from './components/assistant/check_progress'
 import teacher_to_student from './components/assistant/teacher_to_student'
+import progress_student from './components/assistant/progress_student'
+import progress_student_detail from './components/assistant/progress_student_detail'
 
 var router = new VueRouter({
   routes: [
@@ -55,7 +57,9 @@ var router = new VueRouter({
         {path: '', component: center},
         {path: '/create_progress', component: create_progress},
         {path: '/check_progress', component: check_progress},
-        {path: '/teacher_to_student', component: teacher_to_student}
+        {path: '/teacher_to_student', component: teacher_to_student},
+        {path: '/check_progress/progress_student', component: progress_student},
+        {path: '/check_progress/progress_student/progress_student_detail', component: progress_student_detail}
       ]
     }
   ]

@@ -2,12 +2,12 @@
   <div>
     <el-container>
       <el-main>
-        <el-form :model="form" ref="form" :rules="rules" label-width="100px" class="demo-form">
+        <el-form :model="formData" ref="form" :rules="rules" label-width="100px" class="demo-form">
           <el-form-item label="进度名称" prop="title">
-            <el-input v-model="form.title"></el-input>
+            <el-input v-model="formData.title"></el-input>
           </el-form-item>
           <el-form-item label="描述" prop="desc">
-            <el-input type="textarea" v-model="form.desc"></el-input>
+            <el-input type="textarea" v-model="formData.desc"></el-input>
           </el-form-item>
           <el-form-item label="开始时间" required>
             <el-col :span="11">
@@ -15,7 +15,7 @@
                 <el-date-picker
                   type="date"
                   placeholder="选择日期"
-                  v-model="form.start_time"
+                  v-model="formData.start_time"
                   style="width: 100%;">
                 </el-date-picker>
               </el-form-item>
@@ -26,15 +26,15 @@
                 <el-date-picker
                   type="date"
                   placeholder="选择日期"
-                  v-model="form.end_time"
+                  v-model="formData.end_time"
                   style="width: 100%;">
                 </el-date-picker>
               </el-form-item>
             </el-col>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="submit('form')">创建进度，并发送邮件</el-button>
-            <el-button @click="reset('form')">重置</el-button>
+            <el-button type="primary" @click="submit()">创建进度，并发送邮件</el-button>
+            <el-button @click="reset()">重置</el-button>
           </el-form-item>
         </el-form>
       </el-main>
@@ -46,7 +46,7 @@
 export default {
   data () {
     return {
-      form: {
+      formData: {
         title: '',
         desc: '',
         start_time: '',
@@ -62,9 +62,9 @@ export default {
   },
   methods: {
     submit() {
-        console.log(this.form)
+        console.log(this.formData)
         this.$http
-          .post('assistant_center/create_progress', this.form)
+          .post('assistant_center/create_progress/', this.formData)
           .then(result => {
             console.log(result.body)
             if(result.body === 'ok'){
@@ -73,6 +73,12 @@ export default {
               alert("未知错误，请重新发布")
             }
           })
+    },
+    reset() {
+      this.formData.title = ''
+      this.formData.desc = ''
+      this.formData.start_time = ''
+      this.formData.end_time = ''
     }
   }
 }

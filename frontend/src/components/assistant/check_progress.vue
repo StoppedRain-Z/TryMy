@@ -18,12 +18,12 @@
                 style="width:100%">
               </el-table-column>
             </template>
-          </el-table>
-          <el-table-column label="操作" style="width:10%" align="center">
+            <el-table-column label="操作" style="width:10%" align="center">
             <template slot-scope="scope">
-              <el-button type="info" @click="detail_student(scope.row)">查看详情</el-button>
+              <el-button type="primary" @click="detail_student(scope.row)">查看详情</el-button>
             </template>
           </el-table-column>
+          </el-table>
         </div>
       </el-main>
     </el-container>
@@ -37,7 +37,12 @@ export default {
     return {
       row:0,
       radio:{},
-      tables: [],
+      tables: [{
+        "id":1,
+        "title": 'test1',
+        "start_time": '1',
+        "end_time": '2'
+      }],
       tableData:[{
         dataItem: 'id',
         dataName: '序号'
@@ -61,9 +66,9 @@ export default {
           this.tables = result.body
         })
     }
-  },
+  }/*,
   created () {
     this.getData()
-  }
+  }*/
 }
 </script>
