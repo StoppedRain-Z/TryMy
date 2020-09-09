@@ -15,12 +15,16 @@ class Choose(models.Model):
     student_choice = models.PositiveSmallIntegerField(verbose_name="学生选择", choices=CHOICES, default=1)
 
 
-class Progress(models.Model):
-    unique_id = models.IntegerField(unique=True,default=1)
+class ProgressDetail(models.Model):
+    unique_id = models.IntegerField(unique=True, default=1)
     title = models.CharField(max_length=256, default='')
     desc = models.TextField(default='')
     start_time = models.DateField()
     end_time = models.DateField()
+
+
+class Progress(models.Model):
+    detail = models.ForeignKey(ProgressDetail, on_delete=models.CASCADE, null=True, blank=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True)
     student_text = models.TextField(default='')
