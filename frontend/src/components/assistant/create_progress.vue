@@ -69,6 +69,7 @@ export default {
             console.log(result.body)
             if(result.body === 'ok'){
               alert("该任务发布成功")
+              this.reset()
             }else{
               alert("未知错误，请重新发布")
             }

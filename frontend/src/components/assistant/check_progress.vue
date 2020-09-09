@@ -20,7 +20,9 @@
             </template>
             <el-table-column label="操作" style="width:10%" align="center">
             <template slot-scope="scope">
-              <el-button type="primary" @click="detail_student(scope.row)">查看详情</el-button>
+              <router-link :to="{path:'/progress_student', query:{id:scope.row.id}}">
+              <el-button type="primary">查看详情</el-button>
+              </router-link>
             </template>
           </el-table-column>
           </el-table>
@@ -65,7 +67,7 @@ export default {
         .then(result => {
           this.tables = result.body
         })
-    }
+    },
   }/*,
   created () {
     this.getData()
