@@ -49,8 +49,12 @@ class S_Choice(View):
         user = request.user
         student = Student.objects.get(user=user)
         teacher = User.objects.get(username=teacher_id).teacher
-        Choose.objects.create(student=student, teacher=teacher, teacher_choice=1, student_choice=2)
-        return HttpResponse('ok')
+        count = teacher.student_set.all().count()
+        if count < teacher.max_student:
+            Choose.objects.create(student=student, teacher=teacher, teacher_choice=1, student_choice=2)
+            return HttpResponse('ok')
+        else:
+            return HttpResponse('max')
 
 
 class T_Choice(View):
@@ -72,21 +76,24 @@ class T_Choice(View):
         print(data)
         student_id = data.get('student_id')
         choice = data.get('choice')
-        response = {}
         teacher = request.user.teacher
         count = teacher.student_set.all().count()
         student = User.objects.get(username=student_id).student
         choose = Choose.objects.get(student=student, teacher=teacher)
-        if count < teacher.max_student:
-            choose.teacher_choice = choice
-            choose.save()
-            response['msg'] = 'ok'
-            return HttpResponse(response)
+        if student.teacher is None:    # 该学生未选择导师
+            if count < teacher.max_student:   # 该老师还有名额
+                choose.teacher_choice = choice
+                choose.save()
+                if choice == 2:
+                    student.teacher = teacher
+                    student.save()
+                return HttpResponse('ok')
+            else:
+                choose.teacher_choice = 3
+                choose.save()
+                return HttpResponse('max')
         else:
-            choose.teacher_choice = 3
-            choose.save()
-            response['msg'] = 'more than max'
-            return HttpResponse(response)
+            return HttpResponse('student has teacher')
 
 
 def confirm_list_s(request):
@@ -100,7 +107,7 @@ def confirm_list_s(request):
         if teacher_choice == 1:
             choice = '未确认'
         elif teacher_choice == 2:
-            choice = '已确认'
+            choice = '同意'
         elif teacher_choice == 3:
             choice = '拒绝'
         json_item = {"name": choose.teacher.user.name, "teacher_id": choose.teacher.user.username,
@@ -117,7 +124,7 @@ def confirm_list_t(request):
         teacher_choice = choose.teacher_choice
         choice = ''
         if teacher_choice == 2:
-            choice = '已确认'
+            choice = '同意'
         elif teacher_choice == 3:
             choice = '拒绝'
         json_item = {"name": choose.student.user.name, "cardID": choose.student.user.username, "choice": choice}

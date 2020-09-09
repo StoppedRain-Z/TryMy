@@ -3,7 +3,7 @@
     <el-container>
       <el-main style="width:100%">
         <div>
-          <el-table 
+          <el-table
             :data = "tables"
             ref = "multipleTable"
             tooltip-effect="dark"
@@ -74,17 +74,17 @@ export default {
         .post('student_center/choose_teacher/', this.radio)
         .then(result => {
           console.log(result.body)
-          if(result.body === "ok"){
-            alert("加入已选志愿")
-          }else{
-            alert("请重新选择")
+          if (result.body === 'ok') {
+            alert('加入已选志愿')
+          } else if (result.body === 'max') {
+            alert('该老师名额已满，请重新选择')
           }
         })
     },
     changeTeacher(row) {
         console.log(row)
         this.row = row
-        
+
         //console.log(this.radio)
         //this.radio = this.tables[row]
     }
