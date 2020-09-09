@@ -74,7 +74,7 @@ class T_Choice(View):
         choice = data.get('choice')
         response = {}
         teacher = request.user.teacher
-        count = teacher.student_set().all().count()
+        count = teacher.student_set.all().count()
         if count < teacher.max_student:
             student = User.objects.get(username=student_id).student
             Choose.objects.create(student=student, teacher=teacher, teacher_choice=2, student_choice=choice)
@@ -105,17 +105,22 @@ def confirm_list_s(request):
     return HttpResponse(json.dumps(json_list))
 
 
-def confirm_list_t(request, teacher_choice):
-    user = request.user
-    teacher = Teacher.objects.get(user=user)
-    choose_list = Choose.objects.filter(teacher=teacher, teacher_choice=teacher_choice)
+def confirm_list_t(request):
+    teacher = request.user.teacher
+    choose_list = Choose.objects.filter(teacher=teacher).exclude(teacher_choice=1)
     json_list = []
     for choose in choose_list:
-        json_item = {"name": choose.student.user.name, "cardID": choose.student.user.username}
+        teacher_choice = choose.teacher_choice
+        choice = ''
+        if teacher_choice == 2:
+            choice = '已确认'
+        elif teacher_choice == 3:
+            choice = '拒绝'
+        json_item = {"name": choose.student.user.name, "cardID": choose.student.user.username, "choice": choice}
         json_list.append(json_item)
     return HttpResponse(json.dumps(json_list))
 
-
+'''
 def op_t(request):
     user = request.user
     teacher = Teacher.objects.get(user=user)
@@ -145,6 +150,7 @@ def op_s(request, student_choice):
         student.teacher = teacher
         student.save()
     return HttpResponse("ok")
+'''
 
 
 def create_progress(request):
