@@ -33,10 +33,13 @@ class S_Choice(View):
         teacher_list = Teacher.objects.all()
         json_list = []
         for teacher in teacher_list:
+            max_count = teacher.max_student
+            count = teacher.student_set.all().count()
             json_item = {"teacher_name": teacher.user.name,
                          "teacher_institute": teacher.institute,
                          "teacher_info": teacher.teacher_info,
-                         "teacher_id": teacher.user.username}
+                         "teacher_id": teacher.user.username,
+                         "student_count": str(count) + '/' + str(max_count)}
 
             json_list.append(json_item)
         print(json_list)
@@ -46,13 +49,19 @@ class S_Choice(View):
     def post(request):
         data = request.POST
         teacher_id = data.get('teacher_id')
-        user = request.user
-        student = Student.objects.get(user=user)
+        student = request.user.student
         teacher = User.objects.get(username=teacher_id).teacher
         count = teacher.student_set.all().count()
+        print(count)
+        print(teacher.max_student)
         if count < teacher.max_student:
-            Choose.objects.create(student=student, teacher=teacher, teacher_choice=1, student_choice=2)
-            return HttpResponse('ok')
+            choose_list = Choose.objects.filter(student=student, teacher=teacher).count()
+            print(choose_list)
+            if choose_list == 0:
+                Choose.objects.create(student=student, teacher=teacher, teacher_choice=1, student_choice=2)
+                return HttpResponse('ok')
+            else:
+                return HttpResponse('exists')
         else:
             return HttpResponse('max')
 
@@ -78,13 +87,15 @@ class T_Choice(View):
         choice = data.get('choice')
         teacher = request.user.teacher
         count = teacher.student_set.all().count()
+        print(count)
+        print(teacher.max_student)
         student = User.objects.get(username=student_id).student
-        choose = Choose.objects.get(student=student, teacher=teacher)
         if student.teacher is None:    # 该学生未选择导师
+            choose = Choose.objects.get(student=student, teacher=teacher)
             if count < teacher.max_student:   # 该老师还有名额
                 choose.teacher_choice = choice
                 choose.save()
-                if choice == 2:
+                if choice == '2':
                     student.teacher = teacher
                     student.save()
                 return HttpResponse('ok')
