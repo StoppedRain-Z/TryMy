@@ -68,11 +68,33 @@
         this.$http
           .post('teacher_center/choose_student/', array)
           .then(result =>{
+            console.log(result.body.msg)
             if(result.body.msg === 'ok'){
-              alert("成功确认")
-              
+              alert("已同意")
+              this.getData()
             }else{
               alert("请重新选择")
+              this.getData()
+            }
+          })
+      },
+      disagree(row){
+        var array = {
+          "student_id": row.student_id,
+          "choice": 3
+        }
+        console.log(array)
+        this.radio = array
+        this.$http
+          .post('teacher_center/choose_student/', array)
+          .then(result =>{
+            console.log(result.body)
+            if(result.body === 'ok'){
+              alert("已拒绝")
+              this.getData()
+            }else{
+              alert("请重新选择")
+              //this.getData()
             }
           })
       }

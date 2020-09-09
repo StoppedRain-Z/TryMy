@@ -32,20 +32,29 @@
       return {
         tables: [],
         tableData: [{
-          dataItem: 'student_id',
+          dataItem: 'cardID',
           dataName: '学生证号'
+        },{
+          dataItem: 'name',
+          dataName: '姓名'
+        },{
+          dataItem: 'choice',
+          dataName: '确认情况'
         }]
       }
     },
     methods: {
       getData () {
         this.$http
-          .get('teacher_center/choose_student')
+          .get('teacher_center/choose_queue')
           .then(result => {
             console.log(result.body)
             this.tables = result.body
           })
       }
+    },
+    created () {
+      this.getData()
     }
   }
 </script>
