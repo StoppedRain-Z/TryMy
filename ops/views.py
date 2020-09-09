@@ -3,8 +3,9 @@ from django.views import View
 from .models import *
 from django.http import HttpResponse
 import json
+from datetime import datetime, tzinfo, timedelta
 from django.utils import timezone
-from datetime import datetime
+import pytz
 from django.db.models import Q
 from django.core.mail import send_mail
 # Create your views here.
@@ -166,8 +167,11 @@ def create_progress(request):
     data = request.POST
     title = data.get('title')
     desc = data.get('desc')
-    start_time = data.get('start_time')
-    end_time = data.get('end_time')
+    s_time = data.get('start_time').split('-')
+    e_time = data.get('end_time').split('-')
+    print(title, desc, s_time, e_time)
+    start_time = datetime(int(s_time[0]), int(s_time[1]), int(s_time[2]), int(s_time[3]), int(s_time[4]), int(s_time[5]), tzinfo=timezone.utc)
+    end_time = datetime(int(e_time[0]), int(e_time[1]), int(e_time[2]), int(e_time[3]), int(e_time[4]), int(e_time[5]), tzinfo=timezone.utc)
     student_list = Student.objects.all()
     length = ProgressDetail.objects.all().count()
     email_list = []
@@ -222,7 +226,7 @@ def a_plist_student_list(request):
                     json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
                                  'end_time': progress.end_time, 'student_name': progress.student.user.name,
                                  'student_id': progress.student.user.username, 'student_ok': '已完成',
-                                 'teacher': progress.teacher.user.name, 'teacher_ok': '未完成'}
+                                 'teacher': progress.teacher.user.name, 'teacher_ok': '未批改'}
                 half.append(json_item)
         else:
             if progress.teacher is None:
@@ -234,7 +238,7 @@ def a_plist_student_list(request):
                 json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
                              'end_time': progress.end_time, 'student_name': progress.student.user.name,
                              'student_id': progress.student.user.username, 'student_ok': '未完成',
-                             'teacher': progress.teacher.user.name,  'teacher_ok': '未完成'}
+                             'teacher': progress.teacher.user.name,  'teacher_ok': '未批改'}
             unfinished.append(json_item)
     return HttpResponse(json.dumps(finished + half + unfinished))
 

@@ -13,7 +13,7 @@
             <el-col :span="11">
               <el-form-item prop="start_time">
                 <el-date-picker
-                  type="date"
+                  type="datetime"
                   placeholder="选择日期"
                   v-model="formData.start_time"
                   style="width: 100%;">
@@ -24,7 +24,7 @@
             <el-col :span="11">
               <el-form-item prop="end_time">
                 <el-date-picker
-                  type="date"
+                  type="datetime"
                   placeholder="选择日期"
                   v-model="formData.end_time"
                   style="width: 100%;">
@@ -33,7 +33,7 @@
             </el-col>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="submit()">创建进度，并发送邮件</el-button>
+            <el-button type="primary" @click="submit('form')">创建进度，并发送邮件</el-button>
             <el-button @click="reset()">重置</el-button>
           </el-form-item>
         </el-form>
@@ -61,18 +61,37 @@ export default {
     }
   },
   methods: {
-    submit() {
-        console.log(this.formData)
-        this.$http
-          .post('assistant_center/create_progress/', this.formData)
-          .then(result => {
-            console.log(result.body)
-            if(result.body === 'ok'){
-              alert("该任务发布成功")
-            }else{
-              alert("未知错误，请重新发布")
-            }
-          })
+    submit (myform) {
+      console.log(this.formData.start_time)
+      let str1 = this.dateToString(this.formData.start_time)
+      console.log(str1)
+      let str2 = this.dateToString(this.formData.end_time)
+      var array = {
+        'title': this.formData.title,
+        'desc': this.formData.desc,
+        'start_time': str1,
+        'end_time': str2
+      }
+      console.log(this.formData)
+      this.$http
+        .post('assistant_center/create_progress/', array)
+        .then(result => {
+          console.log(result.body)
+          if (result.body === 'ok') {
+            alert("该任务发布成功")
+          } else {
+            alert("未知错误，请重新发布")
+          }
+        })
+    },
+    dateToString(date){
+      var year = date.getFullYear();
+      var month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1
+      var day = date.getDate() < 10 ? '0' + date.getDate() : date.getDate()
+      var hours = date.getHours() < 10 ? '0' + date.getHours() : date.getHours()
+      var minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()
+      var seconds = date.getSeconds() < 10 ? '0'+date.getSeconds() : date.getSeconds()
+      return year + '-' + month + '-'+day+"-"+hours+"-"+minutes+"-"+seconds
     },
     reset() {
       this.formData.title = ''
