@@ -77,6 +77,54 @@ class S_Choice(View):
             return HttpResponse('max')
 
 
+class S_Detail(View):
+    @staticmethod
+    def get(request):
+        user = request.user
+        student = user.student
+        if student is None:
+            response = {'msg': 'user not exist'}
+            return HttpResponse(response)
+        if student.teacher is None:
+            response = {'msg': 'ok', 'student_name': user.name, 'student_id': user.username, 'email': user.email,
+                        'mobile': user.mobile, 'grade': student.grade, 'teacher': '未选择', 'institute': '空'}
+            return HttpResponse(response)
+        else:
+            response = {'msg': 'ok', 'student_name': user.name, 'student_id': user.username, 'email': user.email,
+                        'mobile': user.mobile, 'grade': student.grade, 'teacher': student.teacher.user.name,
+                        'institute': student.teacher.institute}
+            return HttpResponse(response)
+
+    @staticmethod
+    def post(request):
+        student = request.user.student
+        data = request.POST
+        email = data.get('email')
+        mobile = data.get('mobile')
+        try:
+            student.email = email
+            student.mobile = mobile
+            student.save()
+            return HttpResponse('ok')
+        except Exception as e:
+            print(str(e))
+            return HttpResponse(str(e))
+
+
+def student_detail(request):
+    uid = request.POST.get('id')
+    try:
+        user = User.objects.get(username=id)
+        student = user.student
+        response = {'msg': 'ok', 'student_name': user.name, 'student_id': user.username, 'email': user.email,
+                    'mobile': user.mobile, 'grade': student.grade}
+        return HttpResponse(response)
+    except Exception as e:
+        print(str(e))
+        return HttpResponse(str(e))
+
+
+
 class T_Choice(View):
     @staticmethod
     def get(request):
@@ -212,7 +260,9 @@ def a_progress_list(request):
 
 def a_plist_student_list(request):
     uid = request.GET.get('id')
-    detail = ProgressDetail.objects.get(unique_id=uid)
+    print(request.GET)
+    print(int(uid))
+    detail = ProgressDetail.objects.get(unique_id=int(uid))
     progress_list = detail.progress_set.all()
     finished = []
     half = []
@@ -221,32 +271,32 @@ def a_plist_student_list(request):
     for progress in progress_list:
         if progress.student_ok:
             if progress.teacher_ok:
-                json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                             'end_time': progress.end_time, 'student_name': progress.student.user.name,
+                json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
+                             'end_time': detail.end_time, 'student_name': progress.student.user.name,
                              'student_id': progress.student.user.username, 'student_ok': '已完成',
                              'teacher': progress.teacher.user.name, 'teacher_ok': '已完成'}
                 finished.append(json_item)
             else:
                 if progress.teacher is None:
-                    json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                                 'end_time': progress.end_time, 'student_name': progress.student.user.name,
+                    json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
+                                 'end_time': detail.end_time, 'student_name': progress.student.user.name,
                                  'student_id': progress.student.user.username, 'student_ok': '已完成',
                                  'teacher': '未选择', 'teacher_ok': '空'}
                 else:
-                    json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                                 'end_time': progress.end_time, 'student_name': progress.student.user.name,
+                    json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
+                                 'end_time': detail.end_time, 'student_name': progress.student.user.name,
                                  'student_id': progress.student.user.username, 'student_ok': '已完成',
                                  'teacher': progress.teacher.user.name, 'teacher_ok': '未批改'}
                 half.append(json_item)
         else:
             if progress.teacher is None:
-                json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                             'end_time': progress.end_time, 'student_name': progress.student.user.name,
+                json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time':detail.start_time,
+                             'end_time': detail.end_time, 'student_name': progress.student.user.name,
                              'student_id': progress.student.user.username, 'student_ok': '未完成',
                              'teacher': '未选择', 'teacher_ok': '空'}
             else:
-                json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                             'end_time': progress.end_time, 'student_name': progress.student.user.name,
+                json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
+                             'end_time': detail.end_time, 'student_name': progress.student.user.name,
                              'student_id': progress.student.user.username, 'student_ok': '未完成',
                              'teacher': progress.teacher.user.name,  'teacher_ok': '未批改'}
             unfinished.append(json_item)

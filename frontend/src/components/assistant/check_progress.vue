@@ -68,9 +68,9 @@ export default {
           this.tables = result.body
         })
     },
-  }/*,
+  },
   created () {
     this.getData()
-  }*/
+  }
 }
 </script>

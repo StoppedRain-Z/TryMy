@@ -70,14 +70,12 @@ export default {
     getData () {
       this.id = this.$route.query.id
       console.log(this.id)
-      var array = {"id": this.id}
+      var array = {'id': this.id}
+      console.log(array)
       this.$http
-        .get('assistant_center/progress_student', array)
+        .get('assistant_center/progress_student/', {params: array})
         .then(result => {
           this.tables = result.body
-          if(this.tables.msg != 'ok'){
-            alert(this.tables.msg)
-          }
         })
     }
   },
