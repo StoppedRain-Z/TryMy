@@ -43,7 +43,7 @@ export default {
         "title": 'test1',
         "start_time": 1,
         "end_time": 2,
-        'status':'已批改'
+        'status':'已提交未批改'
       }],
       tableData:[{
         dataItem: 'id',
@@ -66,7 +66,7 @@ export default {
   methods: {
     getData () {
       this.$http
-        .get('student_center/S_finished')
+        .get('student_center/S_half')
         .then(result => {
           if(this.tables.msg === 'user does not found'){
             alert(this.tables.msg)
@@ -77,7 +77,7 @@ export default {
     },
   },
   created () {
-    //this.getData()
+    this.getData()
   }
 }
 </script>

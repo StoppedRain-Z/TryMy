@@ -9,7 +9,7 @@ import choose_teacher from './components/student/choose_teacher'
 import choose_queue_S from './components/student/choose_queue'
 import S_unfinished from './components/student/S_unfinished'
 import S_finished from './components/student/S_finished'
-import S_isfinished from './components/student/S_isfinished'
+import S_half from './components/student/S_half'
 import teacher_center from './components/teacher/teacher_center'
 import choose_student from './components/teacher/choose_student'
 import choose_queue_T from './components/teacher/choose_queue'
@@ -21,6 +21,9 @@ import check_progress from './components/assistant/check_progress'
 import teacher_to_student from './components/assistant/teacher_to_student'
 import progress_student from './components/assistant/progress_student'
 import progress_student_detail from './components/assistant/progress_student_detail'
+import S_finish_detail from './components/student/S_finish_detail'
+import S_unfinish_detail from './components/student/S_unfinish_detail'
+import S_half_detail from './components/student/S_half_detail'
 
 var router = new VueRouter({
   routes: [
@@ -35,8 +38,11 @@ var router = new VueRouter({
         {path: '/choose_teacher', component: choose_teacher},
         {path: '/choose_queue_S', component: choose_queue_S},
         {path: '/S_unfinished', component: S_unfinished},
-        {path: '/S_isfinished', component: S_isfinished},
-        {path: '/S_finished', component: S_finished}
+        {path: '/S_half', component: S_half},
+        {path: '/S_finished', component: S_finished},
+        {path: '/S_finish_detail', component: S_finish_detail},
+        {path: '/S_unfinish_detail', component: S_unfinish_detail},
+        {path: '/S_half_detail', component: S_half_detail}
       ]
     },
     {

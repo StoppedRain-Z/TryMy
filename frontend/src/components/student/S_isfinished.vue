@@ -1,9 +1,0 @@
-<template>
-  <div>
-    <el-container>
-      <el-main>
-        S_finished
-      </el-main>
-    </el-container>
-  </div>
-</template>

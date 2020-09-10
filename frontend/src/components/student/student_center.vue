@@ -11,7 +11,7 @@
           <el-submenu index="2">
             <template slot="title"><i class="el-icon-menu"></i>毕设进度</template>
             <el-menu-item index="S_unfinished">未提交</el-menu-item>
-            <el-menu-item index="S_isfinished">已提交未批改</el-menu-item>
+            <el-menu-item index="S_half">已提交未批改</el-menu-item>
             <el-menu-item index="S_finished">已批改</el-menu-item>
           </el-submenu>
         </el-menu>

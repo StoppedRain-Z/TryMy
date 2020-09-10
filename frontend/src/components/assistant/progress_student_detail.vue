@@ -49,6 +49,7 @@ export default {
                 .get('assistant_center/progress_student_detail/', {params: array})
                 .then(result => {
                     this.detail_message = result.body
+                    console.log(result.body)
                     if(this.detail_message.msg != 'ok'){
                         alert(this.detail_message.msg)
                     }
