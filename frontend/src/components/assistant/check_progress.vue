@@ -39,12 +39,7 @@ export default {
     return {
       row:0,
       radio:{},
-      tables: [{
-        "id":1,
-        "title": 'test1',
-        "start_time": '1',
-        "end_time": '2'
-      }],
+      tables: [],
       tableData:[{
         dataItem: 'id',
         dataName: '序号'

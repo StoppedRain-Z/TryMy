@@ -11,7 +11,7 @@
             <el-form-item label="指导教师">{{detail_message.teacher_name}}</el-form-item>
             <el-form-item label="教师反馈">{{detail_message.teacher_text}}</el-form-item>
         </el-form>
-        <router-link to="/progress_student">
+        <router-link :to="{path:'/progress_student', query:{id:this.id}}">
         <el-button  type="primary">返回</el-button>
         </router-link>
       </el-main>
@@ -44,8 +44,9 @@ export default {
                 "id": this.id,
                 "student_id": this.student_id
             }
+            console.log(array)
             this.$http
-                .get('assistant_center/progress_student_detail', array)
+                .get('assistant_center/progress_student_detail/', {params: array})
                 .then(result => {
                     this.detail_message = result.body
                     if(this.detail_message.msg != 'ok'){
@@ -53,6 +54,9 @@ export default {
                     }
                 })
         }
+    },
+    created() {
+        this.getData()
     }
 }
 </script>
