@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, reverse
 from django.views import View
 from .models import *
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 import json
 from datetime import datetime, tzinfo, timedelta, date
 from django.utils import timezone
@@ -84,16 +84,16 @@ class S_Detail(View):
         student = user.student
         if student is None:
             response = {'msg': 'user not exist'}
-            return HttpResponse(response)
+            return JsonResponse(response)
         if student.teacher is None:
             response = {'msg': 'ok', 'student_name': user.name, 'student_id': user.username, 'email': user.email,
                         'mobile': user.mobile, 'grade': student.grade, 'teacher': '未选择', 'institute': '空'}
-            return HttpResponse(response)
+            return JsonResponse(response)
         else:
             response = {'msg': 'ok', 'student_name': user.name, 'student_id': user.username, 'email': user.email,
                         'mobile': user.mobile, 'grade': student.grade, 'teacher': student.teacher.user.name,
                         'institute': student.teacher.institute}
-            return HttpResponse(response)
+            return JsonResponse(response)
 
     @staticmethod
     def post(request):
@@ -118,10 +118,10 @@ def student_detail(request):
         student = user.student
         response = {'msg': 'ok', 'student_name': user.name, 'student_id': user.username, 'email': user.email,
                     'mobile': user.mobile, 'grade': student.grade}
-        return HttpResponse(response)
+        return JsonResponse(response)
     except Exception as e:
         print(str(e))
-        return HttpResponse(str(e))
+        return JsonResponse({'msg': str(e)})
 
 
 
@@ -267,7 +267,6 @@ def a_plist_student_list(request):
     finished = []
     half = []
     unfinished = []
-    json_item = {}
     for progress in progress_list:
         if progress.student_ok:
             if progress.teacher_ok:
@@ -282,32 +281,35 @@ def a_plist_student_list(request):
                                  'end_time': detail.end_time, 'student_name': progress.student.user.name,
                                  'student_id': progress.student.user.username, 'student_ok': '已完成',
                                  'teacher': '未选择', 'teacher_ok': '空'}
+                    half.append(json_item)
                 else:
                     json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                                  'end_time': detail.end_time, 'student_name': progress.student.user.name,
                                  'student_id': progress.student.user.username, 'student_ok': '已完成',
                                  'teacher': progress.teacher.user.name, 'teacher_ok': '未批改'}
-                half.append(json_item)
+                    half.append(json_item)
         else:
             if progress.teacher is None:
                 json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time':detail.start_time,
                              'end_time': detail.end_time, 'student_name': progress.student.user.name,
                              'student_id': progress.student.user.username, 'student_ok': '未完成',
                              'teacher': '未选择', 'teacher_ok': '空'}
+                unfinished.append(json_item)
             else:
                 json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                              'end_time': detail.end_time, 'student_name': progress.student.user.name,
                              'student_id': progress.student.user.username, 'student_ok': '未完成',
                              'teacher': progress.teacher.user.name,  'teacher_ok': '未批改'}
-            unfinished.append(json_item)
+                unfinished.append(json_item)
     return HttpResponse(json.dumps(finished + half + unfinished, cls=ComplexEncoder))
 
 
 def progress_detail(request):
     uid = request.GET.get('id')
     student_id = request.GET.get('student_id')
+    print(uid, student_id)
     student = User.objects.get(username=student_id).student
-    response = {}
+    print(student)
     try:
         progress = ProgressDetail.objects.get(unique_id=uid)
         detail = Progress.objects.get(detail=progress, student=student)
@@ -315,14 +317,18 @@ def progress_detail(request):
             response = {'msg': 'ok', 'title': progress.title, 'desc': progress.desc,
                         'student_name': student.user.name, 'student_text': detail.student_text,
                         'teacher_name': '未选择', 'teacher_text': '空'}
+            print(response)
+            return JsonResponse(response)
         else:
             response = {'msg': 'ok', 'title': progress.title, 'desc': progress.desc,
                         'student_name': student.user.name, 'student_text': detail.student_text,
                         'teacher_name': student.teacher.user.name, 'teacher_text': detail.teacher_text}
-        return HttpResponse(response)
+            print(response)
+            return JsonResponse(response)
     except Exception as e:
         response = {'msg': str(e)}
-        return HttpResponse(response)
+        print(response)
+        return JsonResponse(response)
 
 
 def s_progress_list_unfinished(request):
@@ -384,7 +390,7 @@ class S_Progress_Detail(View):
             return HttpResponse(json.dumps(response, cls=ComplexEncoder))
         except Exception as e:
             response = {'msg': str(e)}
-            return HttpResponse(response)
+            return JsonResponse(response)
 
     @staticmethod
     def post(request):
@@ -398,11 +404,9 @@ class S_Progress_Detail(View):
             progress.student_text = student_text
             progress.student_ok = True
             progress.save()
-            response = {'msg': 'ok'}
-            return HttpResponse(response)
+            return HttpResponse('ok')
         except Exception as e:
-            response = {'msg': str(e)}
-            return HttpResponse(response)
+            return HttpResponse(str(e))
 
 
 class T_Progress_Detail(View):
@@ -419,7 +423,7 @@ class T_Progress_Detail(View):
             return HttpResponse(json.dumps(response, cls=ComplexEncoder))
         except Exception as e:
             response = {'msg': str(e)}
-            return HttpResponse(response)
+            return HttpResponse(json.dumps(response))
 
     @staticmethod
     def post(request):
@@ -433,11 +437,9 @@ class T_Progress_Detail(View):
             progress.teacher = teacher_text
             progress.teacher_ok = True
             progress.save()
-            response = {'msg': 'ok'}
-            return HttpResponse(response)
+            return HttpResponse('ok')
         except Exception as e:
-            response = {'msg': str(e)}
-            return HttpResponse(response)
+            return HttpResponse(str(e))
 
 
 def t_progress_list_unfinished(request):
@@ -471,7 +473,7 @@ def t_progress_list_finished(request):
     response = {}
     if teacher is None:
         response['msg'] = 'user does not found'
-        return HttpResponse(response)
+        return HttpResponse(json.dumps(response))
     # time_now = timezone.now()
     now = datetime.now()
     progress_list = Progress.objects.filter(teacher=teacher, student_ok=True, teacher_ok=True)
