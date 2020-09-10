@@ -3,12 +3,22 @@ from django.views import View
 from .models import *
 from django.http import HttpResponse
 import json
-from datetime import datetime, tzinfo, timedelta
+from datetime import datetime, tzinfo, timedelta, date
 from django.utils import timezone
 import pytz
 from django.db.models import Q
 from django.core.mail import send_mail
 # Create your views here.
+
+
+class ComplexEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
+        elif isinstance(obj, date):
+            return obj.strftime('%Y-%m-%d')
+        else:
+            return json.JSONEncoder.default(self, obj)
 
 
 def index(requests):
@@ -197,7 +207,7 @@ def a_progress_list(request):
         json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
                      'end_time': progress.end_time}
         response.append(json_item)
-    return HttpResponse(json.dumps(response))
+    return HttpResponse(json.dumps(response, cls=ComplexEncoder))
 
 
 def a_plist_student_list(request):
@@ -240,7 +250,7 @@ def a_plist_student_list(request):
                              'student_id': progress.student.user.username, 'student_ok': '未完成',
                              'teacher': progress.teacher.user.name,  'teacher_ok': '未批改'}
             unfinished.append(json_item)
-    return HttpResponse(json.dumps(finished + half + unfinished))
+    return HttpResponse(json.dumps(finished + half + unfinished, cls=ComplexEncoder))
 
 
 def progress_detail(request):
@@ -284,7 +294,7 @@ def s_progress_list_unfinished(request):
         json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
                      'end_time': progress.end_time, 'status': '已失效'}
         res.append(json_item)
-    return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res, cls=ComplexEncoder))
 
 
 def s_progress_list_finished(request):
@@ -307,7 +317,7 @@ def s_progress_list_finished(request):
         json_item = {'id': progress.unique_id, 'title': progress.title,
                      'end_time': progress.end_time, 'status': '已完成'}
         res.append(json_item)
-    return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res, cls=ComplexEncoder))
 
 
 class S_Progress_Detail(View):
@@ -317,11 +327,11 @@ class S_Progress_Detail(View):
         user = request.user
         try:
             student = Student.objects.get(user=user)
-            progress = Progress.objects.get(unique_id=id,student=student)
+            progress = Progress.objects.get(unique_id=id, student=student)
             response = {'title': progress.title, 'desc': progress.desc, 'start_time': progress.start_time,
                         'end_time': progress.end_time, 'student_text': progress.student_text,
                         'teacher_text': progress.teacher_text}
-            return HttpResponse(json.dumps(response))
+            return HttpResponse(json.dumps(response, cls=ComplexEncoder))
         except Exception as e:
             response = {'msg': str(e)}
             return HttpResponse(response)
@@ -356,7 +366,7 @@ class T_Progress_Detail(View):
             response = {'title': progress.title, 'desc': progress.desc, 'start_time': progress.start_time,
                         'end_time': progress.end_time, 'student_text': progress.student_text,
                         'teacher_text': progress.teacher_text}
-            return HttpResponse(json.dumps(response))
+            return HttpResponse(json.dumps(response, cls=ComplexEncoder))
         except Exception as e:
             response = {'msg': str(e)}
             return HttpResponse(response)
@@ -402,7 +412,7 @@ def t_progress_list_unfinished(request):
         json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
                      'end_time': progress.end_time, 'msg': '学生未回复'}
         res.append(json_item)
-    return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res, cls=ComplexEncoder))
 
 
 def t_progress_list_finished(request):
@@ -426,7 +436,7 @@ def t_progress_list_finished(request):
         json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
                      'end_time': progress.end_time, 'msg': '已过期'}
         res.append(json_item)
-    return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res, cls=ComplexEncoder))
 
 
 

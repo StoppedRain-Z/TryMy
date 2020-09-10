@@ -19,8 +19,8 @@ class ProgressDetail(models.Model):
     unique_id = models.IntegerField(unique=True, default=1)
     title = models.CharField(max_length=256, default='')
     desc = models.TextField(default='')
-    start_time = models.DateField()
-    end_time = models.DateField()
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
 
 
 class Progress(models.Model):
