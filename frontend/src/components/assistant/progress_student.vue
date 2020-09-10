@@ -26,6 +26,9 @@
             </template>
           </el-table-column>
           </el-table>
+          <router-link to="/check_progress">
+        <el-button  type="primary">返回</el-button>
+        </router-link>
         </div>
       </el-main>
     </el-container>
