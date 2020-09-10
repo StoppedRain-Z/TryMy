@@ -75,6 +75,9 @@ export default {
         .get('assistant_center/progress_student', array)
         .then(result => {
           this.tables = result.body
+          if(this.tables.msg != 'ok'){
+            alert(this.tables.msg)
+          }
         })
     }
   },
