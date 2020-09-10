@@ -37,6 +37,9 @@ def assistant_center(requests):
     return render(requests, 'assistant_center')
 
 
+'''
+学生志愿填报，get导师列表，post填报志愿
+'''
 class S_Choice(View):
 
     @staticmethod
@@ -77,6 +80,10 @@ class S_Choice(View):
             return HttpResponse('max')
 
 
+'''
+学生个人详细信息,post提供修改
+供学生自己查看
+'''
 class S_Detail(View):
     @staticmethod
     def get(request):
@@ -111,6 +118,11 @@ class S_Detail(View):
             return HttpResponse(str(e))
 
 
+'''
+学生详细信息，根据学生id查找账户
+供导师和辅导员查看
+
+'''
 def student_detail(request):
     uid = request.POST.get('id')
     try:
@@ -123,6 +135,136 @@ def student_detail(request):
         print(str(e))
         return JsonResponse({'msg': str(e)})
 
+
+'''
+学生已填报的志愿的状态列表
+未确认、同意、拒绝
+'''
+def confirm_list_s(request):
+    user = request.user
+    student = Student.objects.get(user=user)
+    choose_list = Choose.objects.filter(student=student, student_choice=2)
+    json_list = []
+    for choose in choose_list:
+        teacher_choice = choose.teacher_choice
+        choice = ''
+        if teacher_choice == 1:
+            choice = '未确认'
+        elif teacher_choice == 2:
+            choice = '同意'
+        elif teacher_choice == 3:
+            choice = '拒绝'
+        json_item = {"name": choose.teacher.user.name, "teacher_id": choose.teacher.user.username,
+                     "teacher_choice": choice, "teacher_info": choose.teacher.teacher_info}
+        json_list.append(json_item)
+    return HttpResponse(json.dumps(json_list))
+
+
+'''
+学生未完成progress列表
+'''
+def s_progress_list_unfinished(request):
+    student = request.user.student
+    if student is None:
+        response = {'msg': 'user does not found'}
+        return HttpResponse(json.dumps(response))
+    # time_now = timezone.now()
+    res = []
+    now = datetime.now()
+    detail_list = ProgressDetail.objects.filter(start_time__lt=now, end_time__gt=now)
+    for detail in detail_list:
+        progress = Progress.objects.get(detail=detail, student=student, student_ok=False)
+        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
+                     'end_time': progress.end_time, 'status': '未完成'}
+        res.append(json_item)
+    detail_list = ProgressDetail.objects.filter(end_time__lt=now)
+    for detail in detail_list:
+        progress = Progress.objects.get(detail=detail, student=student, student_ok=False)
+        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
+                     'end_time': progress.end_time, 'status': '已失效'}
+        res.append(json_item)
+    return HttpResponse(json.dumps(res, cls=ComplexEncoder))
+
+
+'''
+学生已完成但导师未批改的progress列表
+'''
+def s_half(request):
+    student = request.user.student
+    if student is None:
+        response = {'msg': 'user does not found'}
+        return HttpResponse(json.dumps(response))
+    res = []
+    now = datetime.now()
+    detail_list_1 = ProgressDetail.objects.filter(start_time__lt=now, end_time__gt=now)
+    detail_list_2 = ProgressDetail.objects.filter(end_time__lt=now)
+    detail_list = detail_list_1 + detail_list_2
+    for detail in detail_list:
+        progress = Progress.objects.get(detail=detail, student=student, student_ok=True, teacher_ok=False)
+        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
+                     'end_time': progress.end_time, 'status': '未批改'}
+        res.append(json_item)
+    return HttpResponse(json.dumps(res, cls=ComplexEncoder))
+
+
+'''
+学生已完成且导师已批改的progress列表
+'''
+def s_progress_list_finished(request):
+    student = request.user.student
+    if student is None:
+        response = {'msg': 'user does not found'}
+        return HttpResponse(json.dumps(response))
+    # time_now = timezone.now()
+    now = datetime.now()
+    progress_list = Progress.objects.filter(student=student, student_ok=True, teacher_ok=False)
+    res = []
+    for progress in progress_list:
+        json_item = {'id': progress.unique_id, 'title': progress.title,
+                     'end_time': progress.end_time, 'status': '导师未回复'}
+        res.append(json_item)
+    progress_list = Progress.objects.filter(student=student, student_ok=True, teacher_ok=True)
+    for progress in progress_list:
+        json_item = {'id': progress.unique_id, 'title': progress.title,
+                     'end_time': progress.end_time, 'status': '已完成'}
+        res.append(json_item)
+    return HttpResponse(json.dumps(res, cls=ComplexEncoder))
+
+
+'''
+学生progress详情，post提供修改
+'''
+class S_Progress_Detail(View):
+    @staticmethod
+    def get(request):
+        uid = request.GET.get('id')
+        student = request.user.student
+        try:
+            detail = ProgressDetail.objects.get(unique_id=uid)
+            progress = Progress.objects.get(detail=detail, student=student)
+            response = {'msg': 'ok', 'title': detail.title, 'desc': detail.desc, 'start_time': detail.start_time,
+                        'end_time': detail.end_time, 'student_text': progress.student_text,
+                        'teacher_text': progress.teacher_text}
+            return JsonResponse(response, encoder=ComplexEncoder)
+        except Exception as e:
+            response = {'msg': str(e)}
+            return JsonResponse(response)
+
+    @staticmethod
+    def post(request):
+        data = request.POST
+        student_text = data.get('student_text')
+        uid = data.get('id')
+        student = request.user.student
+        try:
+            detail = ProgressDetail.objects.get(unique_id=uid)
+            progress = Progress.objects.get(detail=detail, student=student)
+            progress.student_text = student_text
+            progress.student_ok = True
+            progress.save()
+            return HttpResponse('ok')
+        except Exception as e:
+            return HttpResponse(str(e))
 
 
 class T_Choice(View):
@@ -166,24 +308,7 @@ class T_Choice(View):
             return HttpResponse('student has teacher')
 
 
-def confirm_list_s(request):
-    user = request.user
-    student = Student.objects.get(user=user)
-    choose_list = Choose.objects.filter(student=student, student_choice=2)
-    json_list = []
-    for choose in choose_list:
-        teacher_choice = choose.teacher_choice
-        choice = ''
-        if teacher_choice == 1:
-            choice = '未确认'
-        elif teacher_choice == 2:
-            choice = '同意'
-        elif teacher_choice == 3:
-            choice = '拒绝'
-        json_item = {"name": choose.teacher.user.name, "teacher_id": choose.teacher.user.username,
-                     "teacher_choice": choice, "teacher_info": choose.teacher.teacher_info}
-        json_list.append(json_item)
-    return HttpResponse(json.dumps(json_list))
+
 
 
 def confirm_list_t(request):
@@ -331,82 +456,10 @@ def progress_detail(request):
         return JsonResponse(response)
 
 
-def s_progress_list_unfinished(request):
-    student = request.user.student
-    response = {}
-    if student is None:
-        response['msg'] = 'user does not found'
-        return HttpResponse(response)
-    # time_now = timezone.now()
-    now = datetime.now()
-    progress_list = Progress.objects.filter(student=student, student_ok=False, start_time__lt=now, end_time__gt=now)
-    res = []
-    for progress in progress_list:
-        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                     'end_time': progress.end_time, 'status': '未完成'}
-        res.append(json_item)
-    progress_list = Progress.objects.filter(student=student, student_ok=False, end_time__lt=now)
-    for progress in progress_list:
-        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                     'end_time': progress.end_time, 'status': '已失效'}
-        res.append(json_item)
-    return HttpResponse(json.dumps(res, cls=ComplexEncoder))
 
 
-def s_progress_list_finished(request):
-    user = request.user
-    student = Student.objects.find(user=user)
-    response = {}
-    if student is None:
-        response['msg'] = 'user does not found'
-        return HttpResponse(response)
-    # time_now = timezone.now()
-    now = datetime.now()
-    progress_list = Progress.objects.filter(student=student, student_ok=True, teacher_ok=False)
-    res = []
-    for progress in progress_list:
-        json_item = {'id': progress.unique_id, 'title': progress.title,
-                     'end_time': progress.end_time, 'status': '导师未回复'}
-        res.append(json_item)
-    progress_list = Progress.objects.filter(student=student, student_ok=True, teacher_ok=True)
-    for progress in progress_list:
-        json_item = {'id': progress.unique_id, 'title': progress.title,
-                     'end_time': progress.end_time, 'status': '已完成'}
-        res.append(json_item)
-    return HttpResponse(json.dumps(res, cls=ComplexEncoder))
 
 
-class S_Progress_Detail(View):
-    @staticmethod
-    def get(request):
-        id = request.GET.get('id')
-        user = request.user
-        try:
-            student = Student.objects.get(user=user)
-            progress = Progress.objects.get(unique_id=id, student=student)
-            response = {'title': progress.title, 'desc': progress.desc, 'start_time': progress.start_time,
-                        'end_time': progress.end_time, 'student_text': progress.student_text,
-                        'teacher_text': progress.teacher_text}
-            return HttpResponse(json.dumps(response, cls=ComplexEncoder))
-        except Exception as e:
-            response = {'msg': str(e)}
-            return JsonResponse(response)
-
-    @staticmethod
-    def post(request):
-        data = request.POST
-        student_text = data.get('student_text')
-        id = data.get['id']
-        user = request.user
-        try:
-            student = Student.objects.get(user=user)
-            progress = Progress.objects.get(unique_id=id, student=student)
-            progress.student_text = student_text
-            progress.student_ok = True
-            progress.save()
-            return HttpResponse('ok')
-        except Exception as e:
-            return HttpResponse(str(e))
 
 
 class T_Progress_Detail(View):
