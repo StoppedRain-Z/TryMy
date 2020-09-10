@@ -174,15 +174,17 @@ def s_progress_list_unfinished(request):
     detail_list = ProgressDetail.objects.filter(start_time__lt=now, end_time__gt=now)
     for detail in detail_list:
         progress = Progress.objects.get(detail=detail, student=student, student_ok=False)
-        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                     'end_time': progress.end_time, 'status': '未完成'}
-        res.append(json_item)
+        if progress is not None:
+            json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
+                         'end_time': detail.end_time, 'status': '未完成'}
+            res.append(json_item)
     detail_list = ProgressDetail.objects.filter(end_time__lt=now)
     for detail in detail_list:
         progress = Progress.objects.get(detail=detail, student=student, student_ok=False)
-        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                     'end_time': progress.end_time, 'status': '已失效'}
-        res.append(json_item)
+        if progress is not None:
+            json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
+                         'end_time': detail.end_time, 'status': '已失效'}
+            res.append(json_item)
     return HttpResponse(json.dumps(res, cls=ComplexEncoder))
 
 
@@ -201,9 +203,10 @@ def s_half(request):
     detail_list = detail_list_1 + detail_list_2
     for detail in detail_list:
         progress = Progress.objects.get(detail=detail, student=student, student_ok=True, teacher_ok=False)
-        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                     'end_time': progress.end_time, 'status': '未批改'}
-        res.append(json_item)
+        if progress is not None:
+            json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
+                         'end_time': detail.end_time, 'status': '未批改'}
+            res.append(json_item)
     return HttpResponse(json.dumps(res, cls=ComplexEncoder))
 
 
@@ -215,18 +218,11 @@ def s_progress_list_finished(request):
     if student is None:
         response = {'msg': 'user does not found'}
         return HttpResponse(json.dumps(response))
-    # time_now = timezone.now()
-    now = datetime.now()
-    progress_list = Progress.objects.filter(student=student, student_ok=True, teacher_ok=False)
+    progress_list = Progress.objects.filter(student=student, student_ok=True, teacher_ok=True)
     res = []
     for progress in progress_list:
-        json_item = {'id': progress.unique_id, 'title': progress.title,
-                     'end_time': progress.end_time, 'status': '导师未回复'}
-        res.append(json_item)
-    progress_list = Progress.objects.filter(student=student, student_ok=True, teacher_ok=True)
-    for progress in progress_list:
-        json_item = {'id': progress.unique_id, 'title': progress.title,
-                     'end_time': progress.end_time, 'status': '已完成'}
+        json_item = {'id': progress.detail.unique_id, 'title': progress.detail.title,
+                     'start_time': progress.detail.start_time, 'end_time': progress.detail.end_time, 'status': '已批改'}
         res.append(json_item)
     return HttpResponse(json.dumps(res, cls=ComplexEncoder))
 
