@@ -183,15 +183,17 @@ def s_progress_list_unfinished(request):
     print(now)
     detail_list = ProgressDetail.objects.filter(start_time__lt=now, end_time__gt=now)
     for detail in detail_list:
-        progress = Progress.objects.filter(detail=detail, student=student, student_ok=False)
-        if progress is not None:
+        print(detail.title,detail.start_time,detail.end_time)
+        progress = Progress.objects.filter(detail=detail, student=student, student_ok=False).count()
+        #print(progress.count())
+        if progress != 0:
             json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                          'end_time': detail.end_time, 'status': '未完成'}
             res.append(json_item)
     detail_list = ProgressDetail.objects.filter(end_time__lt=now)
     for detail in detail_list:
-        progress = Progress.objects.filter(detail=detail, student=student, student_ok=False)
-        if progress is not None:
+        progress = Progress.objects.filter(detail=detail, student=student, student_ok=False).count()
+        if progress != 0:
             json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                          'end_time': detail.end_time, 'status': '已失效'}
             res.append(json_item)
@@ -210,12 +212,10 @@ def s_half(request):
         return HttpResponse(json.dumps(response))
     res = []
     now = datetime.now()
-    detail_list_1 = ProgressDetail.objects.filter(start_time__lt=now, end_time__gt=now)
-    detail_list_2 = ProgressDetail.objects.filter(end_time__lt=now)
-    detail_list = detail_list_1 + detail_list_2
+    detail_list = ProgressDetail.objects.filter(start_time__lt=now)
     for detail in detail_list:
-        progress = Progress.objects.filter(detail=detail, student=student, student_ok=True, teacher_ok=False)
-        if progress is not None:
+        progress = Progress.objects.filter(detail=detail, student=student, student_ok=True, teacher_ok=False).count()
+        if progress != 0:
             json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                          'end_time': detail.end_time, 'status': '未批改'}
             res.append(json_item)
@@ -271,9 +271,11 @@ class S_Progress_Detail(View):
         try:
             detail = ProgressDetail.objects.get(unique_id=uid)
             progress = Progress.objects.get(detail=detail, student=student)
+            print(progress.student_ok)
             progress.student_text = student_text
             progress.student_ok = True
             progress.save()
+            print(progress.student_ok)
             return HttpResponse('ok')
         except Exception as e:
             return HttpResponse(str(e))
@@ -478,8 +480,8 @@ def create_progress(request):
     s_time = data.get('start_time').split('-')
     e_time = data.get('end_time').split('-')
     print(title, desc, s_time, e_time)
-    start_time = datetime(int(s_time[0]), int(s_time[1]), int(s_time[2]), int(s_time[3]), int(s_time[4]), int(s_time[5]), tzinfo=timezone.utc)
-    end_time = datetime(int(e_time[0]), int(e_time[1]), int(e_time[2]), int(e_time[3]), int(e_time[4]), int(e_time[5]), tzinfo=timezone.utc)
+    start_time = datetime(int(s_time[0]), int(s_time[1]), int(s_time[2]), int(s_time[3]), int(s_time[4]), int(s_time[5]))
+    end_time = datetime(int(e_time[0]), int(e_time[1]), int(e_time[2]), int(e_time[3]), int(e_time[4]), int(e_time[5]))
     student_list = Student.objects.all()
     length = ProgressDetail.objects.all().count()
     email_list = []
