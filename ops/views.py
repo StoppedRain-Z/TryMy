@@ -37,7 +37,7 @@ class UTC(tzinfo):
 
 
 def index(requests):
-    return render(requests, 'index')
+    return render(requests, 'index.html')
 
 
 def student_center(requests):
