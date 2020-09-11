@@ -10,7 +10,7 @@
             <el-form-item label="结束时间">{{detail_message.end_time}}</el-form-item>
             
             <el-form-item label="进度提交">
-                <el-input v-model="detail_message.student_text"></el-input>
+                <el-input v-model="detail_message.student_text" type="textarea"></el-input>
             </el-form-item>
 
             <el-form-item label="教师反馈">{{detail_message.teacher_text}}</el-form-item>

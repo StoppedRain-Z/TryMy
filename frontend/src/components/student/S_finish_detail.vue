@@ -24,9 +24,7 @@ export default {
     data() {
         return {
             id:0,
-            status:'',
-            detail_message: {},
-            resply: [],
+            detail_message: {}
         }
     },
     methods: {
@@ -44,22 +42,6 @@ export default {
                     console.log(result.body)
                     if(this.detail_message.msg != 'ok'){
                         alert(this.detail_message.msg)
-                    }
-                })
-        },
-        commit() {
-            var array = {
-                "id": this.id,
-                "student_text": this.detail_message.student_text
-            }
-            this.$http
-                .post('student_center/S_P_detail/', array)
-                .then(result => {
-                    if(result.body === 'ok'){
-                        alert('提交成功')
-                        this.$router.push({path:'/S_finished'})
-                    }else{
-                        alert(result.body)
                     }
                 })
         }

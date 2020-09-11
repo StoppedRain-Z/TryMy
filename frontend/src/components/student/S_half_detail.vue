@@ -8,14 +8,18 @@
             <el-form-item label="详细描述">{{detail_message.desc}}</el-form-item>
             <el-form-item label="开始时间">{{detail_message.start_time}}</el-form-item>
             <el-form-item label="结束时间">{{detail_message.end_time}}</el-form-item>
-            
-            <el-form-item label="进度提交">
-                <el-input v-model="detail_message.student_text"></el-input>
+            <el-form-item label="进度提交" v-show = "unchangeshow">
+                {{detail_message.student_text}} 
             </el-form-item>
-
+            <el-form-item label="进度提交" v-show = "changeshow">
+                <el-input v-model="detail_message.student_text" type="textarea"></el-input>
+            </el-form-item>
+            <el-form-item>
+            <el-button  type="primary" @click="text_change">修改</el-button>
+            </el-form-item>
             <el-form-item label="教师反馈">{{detail_message.teacher_text}}</el-form-item>
         </el-form>
-        <el-button type="primary" @click="commit" v-show="isshow">提交</el-button>
+        <el-button type="primary" @click="commit">提交</el-button>
         <router-link :to="{path:'/S_half'}">
         <el-button  type="primary">返回</el-button>
         </router-link>
@@ -32,7 +36,8 @@ export default {
             status:'',
             detail_message: {},
             resply: [],
-            isshow: true
+            unchangeshow: true,
+            changeshow: false
         }
     },
     methods: {
@@ -53,6 +58,10 @@ export default {
                     }
                 })
         },
+        text_change() {
+            this.unchangeshow = false
+            this.changeshow = true
+        },
         commit() {
             var array = {
                 "id": this.id,
@@ -63,7 +72,7 @@ export default {
                 .then(result => {
                     if(result.body === 'ok'){
                         alert('提交成功')
-                        this.$router.push({path:'/S_unfinished'})
+                        this.$router.push({path:'/S_half'})
                     }else{
                         alert(result.body)
                     }
