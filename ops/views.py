@@ -1,13 +1,16 @@
 from django.shortcuts import render, redirect, reverse
 from django.views import View
 from .models import *
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 import json
 from datetime import datetime, tzinfo, timedelta, date
 from django.utils import timezone
 import pytz
 from django.db.models import Q
 from django.core.mail import send_mail
+from django.contrib.auth.decorators import login_required
+import operator
+import os
 # Create your views here.
 
 
@@ -39,15 +42,17 @@ class UTC(tzinfo):
 def index(requests):
     return render(requests, 'index.html')
 
-
+@login_required
 def student_center(requests):
     return render(requests, 'student_center')
 
 
+@login_required
 def teacher_center(requests):
     return render(requests, 'teacher_center')
 
 
+@login_required
 def assistant_center(requests):
     return render(requests, 'assistant_center')
 
@@ -650,47 +655,32 @@ def progress_detail(request):
         return JsonResponse(response)
 
 
-'''
-def a_progress_list_finished(request):
-    teacher_list = Teacher.objects.all()
-    response = {}
-    now = datetime.now()
-    res = []
-    for teacher in teacher_list:
-        progress_list = Progress.objects.filter(teacher=teacher, student_ok=True, teacher_ok=True)
-        for progress in progress_list:
-            json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                         'end_time': progress.end_time, 'msg': '已完成'}
-            res.append(json_item)
-        progress_list = Progress.objects.filter(Q(student_ok=False) | Q(teacher_ok=False), teacher=teacher,
-                                                end_time__lt=now)
-        for progress in progress_list:
-            json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                         'end_time': progress.end_time, 'msg': '已过期'}
-            res.append(json_item)
-    res.sort(key=lambda k: k['start_time'], reverse=True)
-    print(res)
-    return HttpResponse(json.dumps(res))
-
-
-def a_progress_list_unfinished(request):
-    teacher_list = Teacher.objects.all()
-    now = datetime.now()
-    res = []
-    for teacher in teacher_list:
-        progress_list = Progress.objects.filter(Q(teacher_ok=False) | Q(student_ok=False), teacher=teacher,
-                                                start_time__lt=now, end_time__gt=now)
-        for progress in progress_list:
-            json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                         'end_time': progress.end_time, 'msg': '未完成'}
-            res.append(json_item)
-    res.sort(key=lambda k: k['start_time'], reverse=True)
-    print(res)
-    return HttpResponse(json.dumps(res))
-'''
+def mkdir(path):
+    path = path.strip()
+    path = path.replace('\\','/')
+    path = path.rstrip('/')
+    is_exists = os.path.exists(path)
+    if not is_exists:
+        os.makedirs(path.decode('utf-8'))
+        print("创建成功"+path)
 
 
 
+def s_file_upload(request):
+    uid = request.POST.get('id')
+    file = request.FILES.get('userFile', None)
+    student = request.user.student
+    try:
+        detail = ProgressDetail.objects.get(unique_id=uid)
+        progress = Progress.objects.get(detail=detail, student=student)
+        filename = file.name
+        s_dir = 'templates/student_file/' + detail.unique_id +'_'+ detail.title +'/' + student.user.username
+        mkdir(s_dir)
+        with open(s_dir + '/' + filename, 'wb+') as f:
+            for chunk in file.chunks():
+                f.write(chunk)
+    except Exception as e:
+        print(str(e))
 
 
 

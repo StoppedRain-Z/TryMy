@@ -21,6 +21,7 @@ class ProgressDetail(models.Model):
     desc = models.TextField(default='')
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    file = models.CharField(max_length=128, default='')
 
 
 class Progress(models.Model):
@@ -31,4 +32,5 @@ class Progress(models.Model):
     teacher_text = models.TextField(default='')
     student_ok = models.BooleanField(default=False)
     teacher_ok = models.BooleanField(default=False)
+    student_file = models.CharField(max_length=128, default='')
 

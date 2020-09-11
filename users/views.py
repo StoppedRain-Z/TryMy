@@ -4,7 +4,7 @@ from django.shortcuts import redirect, reverse, HttpResponseRedirect
 from django.contrib.auth import login, authenticate, logout
 from .models import *
 from django.views import View
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 
 class RegisterView(View):
@@ -85,8 +85,6 @@ class LoginView(View):
         return JsonResponse(response)
 
 
-class LogoutView(View):
-    @staticmethod
-    def get(request):
-        logout(request)
-        return HttpResponseRedirect(reverse("login"))
+def my_logout(request):
+    logout(request)
+    return HttpResponse('ok')
