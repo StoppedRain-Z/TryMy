@@ -20,7 +20,7 @@
             </template>
             <el-table-column label="操作" style="width:10%" align="center">
             <template slot-scope="scope">
-              <router-link :to="{path:'/S_P_detail', query:{id:scope.row.id}}">
+              <router-link :to="{path:'/S_finish_detail', query:{id:scope.row.id}}">
               <el-button type="primary">查看详情</el-button>
               </router-link>
             </template>

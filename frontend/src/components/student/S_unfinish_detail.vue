@@ -13,6 +13,10 @@
                 <el-input v-model="detail_message.student_text" type="textarea"></el-input>
             </el-form-item>
 
+            <el-form-item label="上传文件">
+                <input style="width: 260px" type="file" v-model="detail_message.file"></input>
+            </el-form-item>
+
             <el-form-item label="教师反馈">{{detail_message.teacher_text}}</el-form-item>
         </el-form>
         <el-button type="primary" @click="commit" v-show="isshow">提交</el-button>
@@ -59,7 +63,8 @@ export default {
         commit() {
             var array = {
                 "id": this.id,
-                "student_text": this.detail_message.student_text
+                "student_text": this.detail_message.student_text,
+                "file": this.detail_message.file
             }
             this.$http
                 .post('student_center/S_P_detail/', array)
