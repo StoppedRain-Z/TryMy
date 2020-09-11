@@ -34,8 +34,11 @@
       <el-form-item label="个人主页" v-show="showT">
         <el-input v-model="registerData.teacher_info"></el-input>
       </el-form-item>
-      <el-form-item label="年级" v-show="showA">
-        <el-input v-model="registerData.grade"></el-input>
+      <el-form-item label="身份" prop="student_type">
+        <el-select v-model="registerData.student_type">
+          <el-option key="非留学生" label="非留学生" value="U"></el-option>
+          <el-option key="留学生" label="留学生" value="F"></el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="register">注册</el-button>
@@ -59,7 +62,7 @@ export default {
         mobile: '',
         teacher_info: '',
         institute: '',
-        grade: ''
+        student_type: ''
       },
       showA: true,
       showT: false
