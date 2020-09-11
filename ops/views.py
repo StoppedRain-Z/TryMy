@@ -11,6 +11,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
 import operator
 import os
+from django.utils.encoding import escape_uri_path
 # Create your views here.
 
 
@@ -41,6 +42,7 @@ class UTC(tzinfo):
 
 def index(requests):
     return render(requests, 'index.html')
+
 
 @login_required
 def student_center(requests):
@@ -137,14 +139,14 @@ class S_Detail(View):
 
     @staticmethod
     def post(request):
-        student = request.user.student
+        user = request.user
         data = request.POST
         email = data.get('email')
         mobile = data.get('mobile')
         try:
-            student.email = email
-            student.mobile = mobile
-            student.save()
+            user.email = email
+            user.mobile = mobile
+            user.save()
             return HttpResponse('ok')
         except Exception as e:
             print(str(e))
@@ -665,7 +667,6 @@ def mkdir(path):
         print("创建成功"+path)
 
 
-
 def s_file_upload(request):
     uid = request.POST.get('id')
     file = request.FILES.get('userFile', None)
@@ -674,14 +675,77 @@ def s_file_upload(request):
         detail = ProgressDetail.objects.get(unique_id=uid)
         progress = Progress.objects.get(detail=detail, student=student)
         filename = file.name
-        s_dir = 'templates/student_file/' + detail.unique_id +'_'+ detail.title +'/' + student.user.username
+        s_dir = 'templates/student_file/' + detail.unique_id + '_' + detail.title + '/' + student.user.username
         mkdir(s_dir)
         with open(s_dir + '/' + filename, 'wb+') as f:
             for chunk in file.chunks():
                 f.write(chunk)
+        progress.student_file = filename
+        progress.save()
+        return HttpResponse('ok')
     except Exception as e:
         print(str(e))
+        return HttpResponse(str(e))
 
+
+def a_file_upload(request):
+    uid = request.POST.get('id')
+    file = request.FILES.get('userFile', None)
+    try:
+        detail = ProgressDetail.objects.get(unique_id=uid)
+        filename = file.name
+        s_dir = 'templates/progress_file/' + detail.unique_id + '_' + detail.title
+        mkdir(s_dir)
+        with open(s_dir + '/' + filename, 'wb+') as f:
+            for chunk in file.chunks():
+                f.write(chunk)
+        detail.file = filename
+        detail.save()
+        return HttpResponse('ok')
+    except Exception as e:
+        print(str(e))
+        return HttpResponse(str(e))
+
+
+def file_iterator(file_name, chunk_size=512):
+    with open(file_name) as f:
+        while True:
+            c = f.read(chunk_size)
+            if c:
+                yield c
+            else:
+                break
+
+
+def progress_file_download(request):
+    uid = request.POST.get('id')
+    try:
+        detail = ProgressDetail.objects.get(unique_id=uid)
+        s_dir = 'templates/progress_file/' + detail.unique_id + '_' + detail.title
+        filename = os.path.join(s_dir, detail.file).replace('\\', '/')
+        response = StreamingHttpResponse(file_iterator(filename))
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(escape_uri_path(filename))
+        return response
+    except Exception as e:
+        return HttpResponse(str(e))
+
+
+def student_file_download(request):
+    uid = request.POST.get('id')
+    student_id = request.POST.get('student_id')
+    try:
+        detail = ProgressDetail.objects.get(unique_id=uid)
+        student = User.objects.get(username=student_id).student
+        progress = Progress.objects.get(detail=detail, student=student)
+        s_dir = 'templates/student_file/' + detail.unique_id + '_' + detail.title + '/' + student.user.username
+        filename = os.path.join(s_dir, detail.file).replace('\\', '/')
+        response = StreamingHttpResponse(file_iterator(filename))
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(escape_uri_path(filename))
+        return response
+    except Exception as e:
+        return HttpResponse(str(e))
 
 
 
