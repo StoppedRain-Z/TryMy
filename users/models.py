@@ -26,6 +26,7 @@ class Teacher(models.Model):
     max_student = models.IntegerField(default=2)
     max_foreign = models.IntegerField(default=1)
 
+
 class Student(models.Model):
     STUDENT_TYPE = (
         ('U', 'undergraduate'),    # 本科生
@@ -33,7 +34,7 @@ class Student(models.Model):
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.DO_NOTHING, null=True, blank=True)
-    student_type = models.CharField(max_length=1, choices=STUDENT_TYPE)
+    student_type = models.CharField(max_length=1, choices=STUDENT_TYPE, default='U')
 
 
 class Assistant(models.Model):

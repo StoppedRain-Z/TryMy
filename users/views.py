@@ -36,8 +36,8 @@ class RegisterView(View):
                                             email=email, mobile=mobile)
             if user_type == 'S':
                 print('create student')
-                type = data.get('student_type')
-                Student.objects.create(user=user, student_type=type)
+                student_type = data.get('student_type')
+                Student.objects.create(user=user, student_type=student_type)
             elif user_type == 'T':
                 print('create teacher')
                 teacher_info = data.get('teacher_info')
