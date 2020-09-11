@@ -10,7 +10,8 @@
           </el-submenu>
           <el-submenu index="2">
             <template slot="title"><i class="el-icon-menu"></i>毕设进度查看</template>
-            <el-menu-item index="T_unfinished">未完成批阅</el-menu-item>
+            <el-menu-item index="T_unfinished">学生未提交</el-menu-item>
+            <el-menu-item index="T_half">学生提交未批阅</el-menu-item>
             <el-menu-item index="T_finished">已完成批阅</el-menu-item>
           </el-submenu>
         </el-menu>

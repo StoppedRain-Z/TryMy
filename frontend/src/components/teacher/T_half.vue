@@ -20,7 +20,7 @@
             </template>
             <el-table-column label="操作" style="width:10%" align="center">
             <template slot-scope="scope">
-              <router-link :to="{path:'/T_finished_detail', query:{id:scope.row.id,student_id:scope.row.student_id}}">
+              <router-link :to="{path:'/T_half_detail', query:{id:scope.row.id, student_id:scope.row.student_id}}">
               <el-button type="primary">查看详情</el-button>
               </router-link>
             </template>
@@ -36,25 +36,25 @@
 export default {
   data () {
     return {
-      row:0,
-      radio:{},
+      row: 0,
+      radio: {},
       tables: [],
-      tableData:[{
+      tableData: [{
         dataItem: 'id',
         dataName: '序号'
-      },{
+      }, {
         dataItem: 'student_name',
         dataName: '学生姓名'
-      },{
+      }, {
         dataItem: 'title',
         dataName: '进度名称'
-      },{
+      }, {
         dataItem: 'start_time',
         dataName: '开始时间'
-      },{
+      }, {
         dataItem: 'end_time',
         dataName: '结束时间'
-      },{
+      }, {
         dataItem: 'msg',
         dataName: '进度状态'
       }]
@@ -63,7 +63,7 @@ export default {
   methods: {
     getData () {
       this.$http
-        .get('teacher_center/T_finished/')
+        .get('teacher_center/T_half/')
         .then(result => {
           if (this.tables.msg === 'user does not found') {
             alert(this.tables.msg)

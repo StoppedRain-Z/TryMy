@@ -20,7 +20,7 @@
             </template>
             <el-table-column label="操作" style="width: 100%" align="center">
               <template slot-scope="scope">
-                <router-link :to="{path:'/progress_student_detail', query:{id:scope.row.id, student_id:scope.row.student_id}}">
+                <router-link :to="{path:'/T_unfinished_detail', query:{id:scope.row.id, student_id:scope.row.student_id}}">
                   <el-button type="primary">查看详情</el-button>
                 </router-link>
               </template>
@@ -42,14 +42,17 @@ export default {
         dataItem: 'id',
         dataName: '作业序号'
       }, {
-        dataItem: 'student_name',
-        dataName: '学生姓名'
+        dataItem: 'title',
+        dataName: '作业标题'
       }, {
-        dataItem: 'student_ok',
+        dataItem: 'msg',
         dataName: '提交情况'
       }, {
-        dataItem: 'teacher_ok',
-        dataName: '批改情况'
+        dataItem: 'start_time',
+        dataName: '开始时间'
+      }, {
+        dataItem: 'end_time',
+        dataName: '结束时间'
       }]
     }
   },

@@ -21,6 +21,21 @@ class ComplexEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
+class UTC(tzinfo):
+    """UTC"""
+    def __init__(self,offset = 0):
+        self._offset = offset
+
+    def utcoffset(self, dt):
+        return timedelta(hours=self._offset)
+
+    def tzname(self, dt):
+        return "UTC +%s" % self._offset
+
+    def dst(self, dt):
+        return timedelta(hours=self._offset)
+
+
 def index(requests):
     return render(requests,'index.html')
 
@@ -178,11 +193,11 @@ def s_progress_list_unfinished(request):
         response = {'msg': 'user does not found'}
         return HttpResponse(json.dumps(response))
     res = []
-    now = datetime.now()
+    now = datetime.now(tz=timezone.utc)
     print(now)
     detail_list = ProgressDetail.objects.filter(start_time__lt=now, end_time__gt=now)
     for detail in detail_list:
-        print(detail.title,detail.start_time,detail.end_time)
+        print(detail.title, detail.start_time, detail.end_time)
         progress = Progress.objects.filter(detail=detail, student=student, student_ok=False).count()
         if progress != 0:
             json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
@@ -209,7 +224,7 @@ def s_half(request):
         response = {'msg': 'user does not found'}
         return HttpResponse(json.dumps(response))
     res = []
-    now = datetime.now()
+    now = datetime.now(tz=timezone.utc)
     detail_list = ProgressDetail.objects.filter(start_time__lt=now)
     for detail in detail_list:
         progress = Progress.objects.filter(detail=detail, student=student, student_ok=True, teacher_ok=False).count()
@@ -268,11 +283,17 @@ class S_Progress_Detail(View):
         student = request.user.student
         try:
             detail = ProgressDetail.objects.get(unique_id=uid)
-            progress = Progress.objects.get(detail=detail, student=student)
-            progress.student_text = student_text
-            progress.student_ok = True
-            progress.save()
-            return HttpResponse('ok')
+            now = datetime.now(tz=timezone.utc)
+            if detail.start_time < now < detail.end_time:
+                progress = Progress.objects.get(detail=detail, student=student)
+                if progress.teacher_ok:
+                    return HttpResponse('老师已批改，不可再次提交')
+                progress.student_text = student_text
+                progress.student_ok = True
+                progress.save()
+                return HttpResponse('ok')
+            else:
+                return HttpResponse('out of date')
         except Exception as e:
             return HttpResponse(str(e))
 
@@ -345,6 +366,8 @@ def confirm_list_t(request):
 '''
 导师   学生尚未提交progress列表
 '''
+
+
 def t_progress_list_unfinished(request):
     teacher = request.user.teacher
     response = {}
@@ -352,7 +375,7 @@ def t_progress_list_unfinished(request):
         response['msg'] = 'user does not found'
         return HttpResponse(response)
     # time_now = timezone.now()
-    now = datetime.now()
+    now = datetime.now(tz=timezone.utc)
     res = []
     detail_list = ProgressDetail.objects.filter(start_time__lt=now, end_time__gt=now)
     for detail in detail_list:
@@ -361,7 +384,15 @@ def t_progress_list_unfinished(request):
         # if length != 0:
         for progress in progress_list:
             json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
-                         'end_time': detail.end_time, 'msg': '未回执', 'student_id': progress.student.user.username,
+                         'end_time': detail.end_time, 'msg': '未完成', 'student_id': progress.student.user.username,
+                         'student_name': progress.student.user.name}
+            res.append(json_item)
+    detail_list = ProgressDetail.objects.filter(end_time__lt=now)
+    for detail in detail_list:
+        progress_list = Progress.objects.filter(detail=detail, student_ok=False, teacher=teacher)
+        for progress in progress_list:
+            json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
+                         'end_time': detail.end_time, 'msg': '超时未完成', 'student_id': progress.student.user.username,
                          'student_name': progress.student.user.name}
             res.append(json_item)
     return HttpResponse(json.dumps(res, cls=ComplexEncoder))
@@ -378,15 +409,16 @@ def t_half(request):
     if teacher is None:
         response['msg'] = 'user does not found'
         return HttpResponse(response)
-    now = datetime.now()
+    now = datetime.now(tz=timezone.utc)
     res = []
-    progress_list = Progress.objects.filter(student_ok=True, teacher=teacher, teacher_ok=True)
+    progress_list = Progress.objects.filter(student_ok=True, teacher=teacher, teacher_ok=False)
     for progress in progress_list:
         detail = progress.detail
         json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                      'end_time': detail.end_time, 'msg': '未回复', 'student_id': progress.student.user.username,
                      'student_name': progress.student.user.name}
         res.append(json_item)
+    res.sort(key=lambda k: k['start_time'])
     return HttpResponse(json.dumps(res, cls=ComplexEncoder))
 
 
@@ -402,20 +434,16 @@ def t_progress_list_finished(request):
         response['msg'] = 'user does not found'
         return HttpResponse(json.dumps(response))
     # time_now = timezone.now()
-    now = datetime.now()
+    now = datetime.now(tz=timezone.utc)
     progress_list = Progress.objects.filter(teacher=teacher, student_ok=True, teacher_ok=True)
     res = []
     for progress in progress_list:
         detail = progress.detail
         json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
-                     'end_time': detail.end_time, 'msg': '已完成'}
+                     'end_time': detail.end_time, 'msg': '已完成', 'student_id': progress.student.user.username,
+                     'student_name': progress.student.user.name}
         res.append(json_item)
-    progress_list = Progress.objects.filter(Q(student_ok=False) | Q(teacher_ok=False),teacher=teacher,
-                                            end_time__lt=now)
-    for progress in progress_list:
-        json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
-                     'end_time': progress.end_time, 'msg': '已过期'}
-        res.append(json_item)
+    res.sort(key=lambda k: k['start_time'])
     return HttpResponse(json.dumps(res, cls=ComplexEncoder))
 
 
@@ -433,8 +461,8 @@ class T_Progress_Detail(View):
             student = User.objects.get(username=student_id).student
             detail = ProgressDetail.objects.get(unique_id=uid)
             progress = Progress.objects.get(detail=detail, teacher=teacher, student=student)
-            response = {'title': detail.title, 'desc': detail.desc, 'start_time': detail.start_time,
-                        'end_time': detail.end_time, 'student_text': progress.student_text,
+            response = {'msg': 'ok', 'title': detail.title, 'desc': detail.desc, 'start_time': detail.start_time,
+                        'end_time': detail.end_time, 'student_name': student.user.name, 'student_text': progress.student_text,
                         'teacher_text': progress.teacher_text}
             return JsonResponse(response, encoder=ComplexEncoder)
         except Exception as e:
@@ -452,7 +480,7 @@ class T_Progress_Detail(View):
             student = User.objects.get(username=student_id).student
             detail = ProgressDetail.objects.get(unique_id=uid)
             progress = Progress.objects.get(detail=detail, teacher=teacher, student=student)
-            progress.teacher = teacher_text
+            progress.teacher_text = teacher_text
             progress.teacher_ok = True
             progress.save()
             return HttpResponse('ok')
@@ -495,8 +523,8 @@ def create_progress(request):
     s_time = data.get('start_time').split('-')
     e_time = data.get('end_time').split('-')
     print(title, desc, s_time, e_time)
-    start_time = datetime(int(s_time[0]), int(s_time[1]), int(s_time[2]), int(s_time[3]), int(s_time[4]), int(s_time[5]))
-    end_time = datetime(int(e_time[0]), int(e_time[1]), int(e_time[2]), int(e_time[3]), int(e_time[4]), int(e_time[5]))
+    start_time = datetime(int(s_time[0]), int(s_time[1]), int(s_time[2]), int(s_time[3]), int(s_time[4]), int(s_time[5]), tzinfo=UTC(0))
+    end_time = datetime(int(e_time[0]), int(e_time[1]), int(e_time[2]), int(e_time[3]), int(e_time[4]), int(e_time[5]), tzinfo=UTC(0))
     student_list = Student.objects.all()
     length = ProgressDetail.objects.all().count()
     email_list = []
