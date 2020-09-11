@@ -20,7 +20,7 @@
             </template>
             <el-table-column label="操作" style="width:10%" align="center">
             <template slot-scope="scope">
-              <router-link :to="{path:'/S_P_detail', query:{id:scope.row.id}}">
+              <router-link :to="{path:'/S_half_detail', query:{id:scope.row.id}}">
               <el-button type="primary">查看详情</el-button>
               </router-link>
             </template>
@@ -38,13 +38,7 @@ export default {
     return {
       row:0,
       radio:{},
-      tables: [{
-        "id":1,
-        "title": 'test1',
-        "start_time": 1,
-        "end_time": 2,
-        'status':'已提交未批改'
-      }],
+      tables: [],
       tableData:[{
         dataItem: 'id',
         dataName: '序号'

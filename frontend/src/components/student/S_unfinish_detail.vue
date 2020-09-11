@@ -39,6 +39,9 @@ export default {
         getData() {
             this.id = this.$route.query.id
             this.status = this.$route.query.status
+            if(this.status === '已失效'){
+                this.isshow = false
+            }
             var array = {
                 "id": this.id
             }
@@ -52,11 +55,6 @@ export default {
                         alert(this.detail_message.msg)
                     }
                 })
-        },
-        isdue() {
-            if(this.status === '已过期'){
-                isshow = false
-            }
         },
         commit() {
             var array = {
@@ -77,7 +75,6 @@ export default {
     },
     created() {
         this.getData()
-        this.isdue()
     }
 }
 </script>

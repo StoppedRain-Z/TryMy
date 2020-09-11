@@ -16,7 +16,7 @@
             <el-form-item label="教师反馈">{{detail_message.teacher_text}}</el-form-item>
         </el-form>
         <el-button type="primary" @click="commit" v-show="isshow">提交</el-button>
-        <router-link :to="{path:'/S_unfinished'}">
+        <router-link :to="{path:'/S_half'}">
         <el-button  type="primary">返回</el-button>
         </router-link>
       </el-main>
@@ -53,11 +53,6 @@ export default {
                     }
                 })
         },
-        isdue() {
-            if(this.status === '已过期'){
-                isshow = false
-            }
-        },
         commit() {
             var array = {
                 "id": this.id,
@@ -77,7 +72,6 @@ export default {
     },
     created() {
         this.getData()
-        this.isdue()
     }
 }
 </script>
