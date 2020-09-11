@@ -32,11 +32,12 @@ class RegisterView(View):
             response['msg'] = "缺少注册信息"
             return JsonResponse(response)
         try:
-            user = User.objects.create_user(user_type=user_type, username=cardID, name=name, password=password, email=email, mobile=mobile)
+            user = User.objects.create_user(user_type=user_type, username=cardID, name=name, password=password,
+                                            email=email, mobile=mobile)
             if user_type == 'S':
                 print('create student')
-                grade = data.get('grade')
-                Student.objects.create(user=user, grade=grade)
+                type = data.get('student_type')
+                Student.objects.create(user=user, student_type=type)
             elif user_type == 'T':
                 print('create teacher')
                 teacher_info = data.get('teacher_info')
@@ -44,8 +45,7 @@ class RegisterView(View):
                 Teacher.objects.create(user=user, teacher_info=teacher_info, institute=institute)
             elif user_type == 'A':
                 print('create assistant')
-                grade = data.get('grade')
-                Assistant.objects.create(user=user, grade=grade)
+                Assistant.objects.create(user=user)
             response['msg'] = 'ok'
             return JsonResponse(response)
         except Exception as e:

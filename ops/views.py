@@ -37,7 +37,7 @@ class UTC(tzinfo):
 
 
 def index(requests):
-    return render(requests,'index.html')
+    return render(requests, 'index')
 
 
 def student_center(requests):
@@ -64,13 +64,14 @@ class S_Choice(View):
         teacher_list = Teacher.objects.all()
         json_list = []
         for teacher in teacher_list:
-            max_count = teacher.max_student
-            count = teacher.student_set.all().count()
+            u_count = teacher.student_set.filter(student_type='U').count()
+            f_count = teacher.student_set.filter(student_type='F').count()
             json_item = {"teacher_name": teacher.user.name,
                          "teacher_institute": teacher.institute,
                          "teacher_info": teacher.teacher_info,
                          "teacher_id": teacher.user.username,
-                         "student_count": str(count) + '/' + str(max_count)}
+                         "student_count": str(u_count) + '/' + str(teacher.max_student),
+                         "foreign_count": str(f_count) + '/' + str(teacher.max_foreign)}
 
             json_list.append(json_item)
         print(json_list)
@@ -82,10 +83,18 @@ class S_Choice(View):
         teacher_id = data.get('teacher_id')
         student = request.user.student
         teacher = User.objects.get(username=teacher_id).teacher
-        count = teacher.student_set.all().count()
+        student_type = student.student_type
+        count = 0
+        max_count = 0
+        if student_type == 'U':
+            count = teacher.student_set.filter(student_type='U').count()
+            max_count = teacher.max_student
+        elif student_type == 'F':
+            count = teacher.student_set.filter(student_type='F').count()
+            max_count = teacher.max_foreign
         print(count)
         print(teacher.max_student)
-        if count < teacher.max_student:
+        if count < max_count:
             choose_list = Choose.objects.filter(student=student, teacher=teacher).count()
             print(choose_list)
             if choose_list == 0:
