@@ -53,7 +53,7 @@ export default {
                 .then(result => {
                     this.detail_message = result.body
                     console.log(result.body)
-                    if(this.detail_message.msg != 'ok'){
+                    if(this.detail_message.msg !== 'ok'){
                         alert(this.detail_message.msg)
                     }
                 })

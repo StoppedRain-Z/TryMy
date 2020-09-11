@@ -10,6 +10,7 @@ import choose_queue_S from './components/student/choose_queue'
 import S_unfinished from './components/student/S_unfinished'
 import S_finished from './components/student/S_finished'
 import S_half from './components/student/S_half'
+import student_message from './components/student/student_message'
 import teacher_center from './components/teacher/teacher_center'
 import choose_student from './components/teacher/choose_student'
 import choose_queue_T from './components/teacher/choose_queue'
@@ -46,7 +47,8 @@ var router = new VueRouter({
         {path: '/S_finished', component: S_finished},
         {path: '/S_finish_detail', component: S_finish_detail},
         {path: '/S_unfinish_detail', component: S_unfinish_detail},
-        {path: '/S_half_detail', component: S_half_detail}
+        {path: '/S_half_detail', component: S_half_detail},
+        {path: '/student_message', component: student_message}
       ]
     },
     {

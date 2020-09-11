@@ -49,6 +49,12 @@ export default {
       {
         dataItem: 'teacher_info',
         dataName: '个人主页'
+      },{
+        dataItem: 'student_count',
+        dataName: '非留学生'
+      },{
+        dataItem: 'foreign_count',
+        dataName: '留学生'
       }]
     }
   },
