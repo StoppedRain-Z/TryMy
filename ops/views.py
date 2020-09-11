@@ -296,6 +296,9 @@ class S_Progress_Detail(View):
         data = request.POST
         student_text = data.get('student_text')
         uid = data.get('id')
+        print(request.FILES)
+        file = request.FILES.get('file', None)
+        print(file)
         student = request.user.student
         try:
             detail = ProgressDetail.objects.get(unique_id=uid)
@@ -306,6 +309,13 @@ class S_Progress_Detail(View):
                     return HttpResponse('老师已批改，不可再次提交')
                 progress.student_text = student_text
                 progress.student_ok = True
+                filename = file.name
+                s_dir = 'templates/student_file/' + detail.unique_id + '_' + detail.title + '/' + student.user.username
+                mkdir(s_dir)
+                with open(s_dir + '/' + filename, 'wb+') as f:
+                    for chunk in file.chunks():
+                        f.write(chunk)
+                progress.student_file = filename
                 progress.save()
                 return HttpResponse('ok')
             else:
@@ -667,6 +677,7 @@ def mkdir(path):
         print("创建成功"+path)
 
 
+'''
 def s_file_upload(request):
     uid = request.POST.get('id')
     file = request.FILES.get('userFile', None)
@@ -705,6 +716,7 @@ def a_file_upload(request):
     except Exception as e:
         print(str(e))
         return HttpResponse(str(e))
+'''
 
 
 def file_iterator(file_name, chunk_size=512):
