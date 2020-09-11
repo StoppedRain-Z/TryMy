@@ -42,6 +42,9 @@ export default {
         dataItem: 'id',
         dataName: '作业序号'
       }, {
+        dataItem: 'student_name',
+        dataName: '学生姓名'
+      }, {
         dataItem: 'title',
         dataName: '作业标题'
       }, {
