@@ -14,7 +14,9 @@ import teacher_center from './components/teacher/teacher_center'
 import choose_student from './components/teacher/choose_student'
 import choose_queue_T from './components/teacher/choose_queue'
 import T_unfinished from './components/teacher/T_unfinished'
+import T_unfinished_detail from './components/teacher/T_unfinished_detail'
 import T_finished from './components/teacher/T_finished'
+import T_finished_detail from './components/teacher/T_finished_detail'
 import assistant_center from './components/assistant/assistant_center'
 import create_progress from './components/assistant/create_progress'
 import check_progress from './components/assistant/check_progress'
@@ -24,6 +26,8 @@ import progress_student_detail from './components/assistant/progress_student_det
 import S_finish_detail from './components/student/S_finish_detail'
 import S_unfinish_detail from './components/student/S_unfinish_detail'
 import S_half_detail from './components/student/S_half_detail'
+import T_half from './components/teacher/T_half'
+import T_half_detail from './components/teacher/T_half_detail'
 
 var router = new VueRouter({
   routes: [
@@ -53,7 +57,11 @@ var router = new VueRouter({
         {path: '/choose_student', component: choose_student},
         {path: '/choose_queue_T', component: choose_queue_T},
         {path: '/T_unfinished', component: T_unfinished},
-        {path: '/T_finished', component: T_finished}
+        {path: '/T_finished', component: T_finished},
+        {path: '/T_half', component: T_half},
+        {path: '/T_half_detail', component: T_half_detail},
+        {path: '/T_finished_detail', component: T_finished_detail},
+        {path: '/T_unfinished_detail', component: T_unfinished_detail}
       ]
     },
     {
