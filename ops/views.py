@@ -122,11 +122,11 @@ class S_Detail(View):
             return JsonResponse(response)
         if student.teacher is None:
             response = {'msg': 'ok', 'student_name': user.name, 'student_id': user.username, 'email': user.email,
-                        'mobile': user.mobile, 'grade': student.grade, 'teacher': '未选择', 'institute': '空'}
+                        'mobile': user.mobile, 'student_type': student.student_type, 'teacher': '未选择', 'institute': '空'}
             return JsonResponse(response)
         else:
             response = {'msg': 'ok', 'student_name': user.name, 'student_id': user.username, 'email': user.email,
-                        'mobile': user.mobile, 'grade': student.grade, 'teacher': student.teacher.user.name,
+                        'mobile': user.mobile, 'student_type': student.student_type, 'teacher': student.teacher.user.name,
                         'institute': student.teacher.institute}
             return JsonResponse(response)
 
@@ -158,7 +158,7 @@ def student_detail(request):
         user = User.objects.get(username=id)
         student = user.student
         response = {'msg': 'ok', 'student_name': user.name, 'student_id': user.username, 'email': user.email,
-                    'mobile': user.mobile, 'grade': student.grade}
+                    'mobile': user.mobile, 'student_type': student.student_type}
         return JsonResponse(response)
     except Exception as e:
         print(str(e))
