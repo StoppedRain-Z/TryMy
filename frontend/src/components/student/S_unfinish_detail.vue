@@ -14,7 +14,7 @@
             </el-form-item>
 
             <el-form-item label="上传文件">
-                <input style="width: 260px" type="file" v-model="detail_message.file"></input>
+                <input style="width: 260px" type="file" @change="getFile($event)"></input>
             </el-form-item>
 
             <el-form-item label="教师反馈">{{detail_message.teacher_text}}</el-form-item>
@@ -66,6 +66,7 @@ export default {
                 "student_text": this.detail_message.student_text,
                 "file": this.detail_message.file
             }
+            console.log(array)
             this.$http
                 .post('student_center/S_P_detail/', array)
                 .then(result => {
@@ -76,6 +77,9 @@ export default {
                         alert(result.body)
                     }
                 })
+        },
+        getFile(event) {
+            this.detail_message.file = event.target.files[0]
         }
     },
     created() {
