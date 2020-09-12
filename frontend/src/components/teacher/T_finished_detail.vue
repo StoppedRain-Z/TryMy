@@ -84,15 +84,17 @@ export default {
       console.log(formdata)
       this.$http
         .post('student_file_download/', formdata, {headers: {
-          'Content-Type': 'multipart/form-data'}})
+          'Content-Type': 'multipart/form-data'}}, {responseType: 'blob'})
         .then(result => {
           console.log(result.data)
-          const blob = new Blob([result.body])
+          const blob = new Blob([result.data])
           if (window.navigator.msSaveOrOpenBlob) {
             navigator.msSaveBlob(blob, this.progress_file)
           } else {
             let aTag = document.createElement('a')
-            aTag.download = this.progress_file
+            aTag.download = this.student_file
+            console.log(this.student_file)
+            console.log(this.detail_message.student_file)
             aTag.href = URL.createObjectURL(blob)
             aTag.click()
             URL.revokeObjectURL(aTag.href)

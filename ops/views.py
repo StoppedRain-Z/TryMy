@@ -209,7 +209,7 @@ def s_progress_list_unfinished(request):
         response = {'msg': 'user does not found'}
         return HttpResponse(json.dumps(response))
     res = []
-    now = datetime.now(tz=timezone.utc)
+    now = timezone.now()
     print(now)
     detail_list = ProgressDetail.objects.filter(start_time__lt=now, end_time__gt=now)
     for detail in detail_list:
@@ -240,7 +240,8 @@ def s_half(request):
         response = {'msg': 'user does not found'}
         return HttpResponse(json.dumps(response))
     res = []
-    now = datetime.now(tz=timezone.utc)
+    now = timezone.now()
+    print(now)
     detail_list = ProgressDetail.objects.filter(start_time__lt=now)
     for detail in detail_list:
         progress = Progress.objects.filter(detail=detail, student=student, student_ok=True, teacher_ok=False).count()
@@ -303,7 +304,8 @@ class S_Progress_Detail(View):
         student = request.user.student
         try:
             detail = ProgressDetail.objects.get(unique_id=uid)
-            now = datetime.now(tz=timezone.utc)
+            now = timezone.now()
+            print(now)
             if detail.start_time < now < detail.end_time:
                 progress = Progress.objects.get(detail=detail, student=student)
                 if progress.teacher_ok:
@@ -402,7 +404,8 @@ def t_progress_list_unfinished(request):
         response['msg'] = 'user does not found'
         return HttpResponse(response)
     # time_now = timezone.now()
-    now = datetime.now(tz=timezone.utc)
+    now = timezone.now()
+    print(now)
     res = []
     detail_list = ProgressDetail.objects.filter(start_time__lt=now, end_time__gt=now)
     for detail in detail_list:
@@ -436,7 +439,8 @@ def t_half(request):
     if teacher is None:
         response['msg'] = 'user does not found'
         return HttpResponse(response)
-    now = datetime.now(tz=timezone.utc)
+    now = timezone.now()
+    print(now)
     res = []
     progress_list = Progress.objects.filter(student_ok=True, teacher=teacher, teacher_ok=False)
     for progress in progress_list:
@@ -461,7 +465,8 @@ def t_progress_list_finished(request):
         response['msg'] = 'user does not found'
         return HttpResponse(json.dumps(response))
     # time_now = timezone.now()
-    now = datetime.now(tz=timezone.utc)
+    now = timezone.now()
+    print(now)
     progress_list = Progress.objects.filter(teacher=teacher, student_ok=True, teacher_ok=True)
     res = []
     for progress in progress_list:
@@ -749,7 +754,7 @@ def progress_file_download(request):
         filename = os.path.join(s_dir, detail.file).replace('\\', '/')
         response = StreamingHttpResponse(file_iterator(filename))
         response['Content-Type'] = 'application/octet-stream'
-        response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(escape_uri_path(filename))
+        response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(filename.encode('utf-8'))
         return response
     except Exception as e:
         return HttpResponse(str(e))
@@ -768,7 +773,7 @@ def student_file_download(request):
         print(filename)
         response = StreamingHttpResponse(file_iterator(filename))
         response['Content-Type'] = 'application/octet-stream'
-        response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(escape_uri_path(filename))
+        response['Content-Disposition'] = "attachment;filename=" + progress.student_file
         return response
     except Exception as e:
         return HttpResponse(str(e))
