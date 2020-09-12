@@ -64,11 +64,18 @@ export default {
             var array = {
                 "id": this.id,
                 "student_text": this.detail_message.student_text,
-                "file": this.detail_message.file
             }
-            console.log(array)
+            var formData = new window.FormData();
+            formData.append('id',this.id)
+            formData.append('student_text', this.detail_message.student_text)
+            formData.append('file',this.detail_message.file)
+            console.log(formData.get('file'))
             this.$http
-                .post('student_center/S_P_detail/', array)
+                .post('student_center/S_P_detail/', formData, {
+                    headers:{
+                    'Content-Type': 'multipart/form-data'
+                }
+                })
                 .then(result => {
                     if(result.body === 'ok'){
                         alert('提交成功')

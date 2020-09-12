@@ -14,12 +14,10 @@
             <el-form-item label="进度提交" v-show = "changeshow">
                 <el-input v-model="detail_message.student_text" type="textarea"></el-input>
             </el-form-item>
-            <el-form-item>
-            <el-button  type="primary" @click="text_change">修改</el-button>
-            </el-form-item>
             <el-form-item label="教师反馈">{{detail_message.teacher_text}}</el-form-item>
         </el-form>
-        <el-button type="primary" @click="commit">提交</el-button>
+        <el-button  type="primary" @click="text_change" v-show="unchangeshow">修改</el-button>
+        <el-button type="primary" @click="commit" v-show="changeshow">提交</el-button>
         <router-link :to="{path:'/S_half'}">
         <el-button  type="primary">返回</el-button>
         </router-link>
