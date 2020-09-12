@@ -9,6 +9,9 @@
           <el-form-item label="描述" prop="desc">
             <el-input type="textarea" v-model="formData.desc"></el-input>
           </el-form-item>
+          <el-form-item label="相关说明">
+            <input style="width: 260px" type="file" @change="getFile($event)"></input>
+          </el-form-item>
           <el-form-item label="开始时间" required>
             <el-col :span="11">
               <el-form-item prop="start_time">
@@ -44,13 +47,14 @@
 
 <script>
 export default {
+  inject: ['reload'],
   data () {
     return {
       formData: {
-        title: '',
-        desc: '',
-        start_time: '',
-        end_time: ''
+        'title' :'',
+        'desc': '',
+        'start_time' : '',
+        'end_time': '',
       },
       rules: {
         title: [{required: true, message: '请输入进度名称', trigger: 'blur'}],
@@ -66,19 +70,24 @@ export default {
       let str1 = this.dateToString(this.formData.start_time)
       console.log(str1)
       let str2 = this.dateToString(this.formData.end_time)
-      var array = {
-        'title': this.formData.title,
-        'desc': this.formData.desc,
-        'start_time': str1,
-        'end_time': str2
-      }
-      console.log(this.formData)
+      var array = new window.FormData()
+      array.append('title', this.formData.title)
+      array.append('desc', this.formData.desc)
+      array.append('start_time', str1)
+      array.append('end_time', str2)
+      array.append('file', this.formData.file)
+      console.log(this.formData.file)
       this.$http
-        .post('assistant_center/create_progress/', array)
+        .post('assistant_center/create_progress/', array, {
+           headers:{
+                    'Content-Type': 'multipart/form-data'
+                }
+        })
         .then(result => {
           console.log(result.body)
           if (result.body === 'ok') {
             alert("该任务发布成功")
+            this.reset()
           } else {
             alert("未知错误，请重新发布")
           }
@@ -94,10 +103,15 @@ export default {
       return year + '-' + month + '-'+day+"-"+hours+"-"+minutes+"-"+seconds
     },
     reset() {
-      this.formData.title = ''
-      this.formData.desc = ''
-      this.formData.start_time = ''
-      this.formData.end_time = ''
+      //this.formData = {}
+      this.reload()
+    },
+    getFile(event) {
+        this.formData.file = event.target.files[0]
+        console.log(this.formData.file)
+    },
+    created() {
+      console.log(this.formData.file)
     }
   }
 }
