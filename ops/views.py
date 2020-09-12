@@ -310,7 +310,7 @@ class S_Progress_Detail(View):
                 progress.student_text = student_text
                 progress.student_ok = True
                 filename = file.name
-                s_dir = 'templates/student_file/' + detail.unique_id + '_' + detail.title + '/' + student.user.username
+                s_dir = 'templates/student_file/' + str(detail.unique_id) + '_' + detail.title + '/' + student.user.username
                 mkdir(s_dir)
                 with open(s_dir + '/' + filename, 'wb+') as f:
                     for chunk in file.chunks():
@@ -673,7 +673,7 @@ def mkdir(path):
     path = path.rstrip('/')
     is_exists = os.path.exists(path)
     if not is_exists:
-        os.makedirs(path.decode('utf-8'))
+        os.makedirs(path.encode('utf-8').decode('utf-8'))
         print("创建成功"+path)
 
 
