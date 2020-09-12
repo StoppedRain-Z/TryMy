@@ -285,7 +285,8 @@ class S_Progress_Detail(View):
             progress = Progress.objects.get(detail=detail, student=student)
             response = {'msg': 'ok', 'title': detail.title, 'desc': detail.desc, 'start_time': detail.start_time,
                         'end_time': detail.end_time, 'student_text': progress.student_text,
-                        'teacher_text': progress.teacher_text}
+                        'teacher_text': progress.teacher_text, 'student_id':student.user.username,
+                        'student_file': progress.file, 'progress_file': detail.file}
             return JsonResponse(response, encoder=ComplexEncoder)
         except Exception as e:
             response = {'msg': str(e)}
@@ -489,7 +490,7 @@ class T_Progress_Detail(View):
             progress = Progress.objects.get(detail=detail, teacher=teacher, student=student)
             response = {'msg': 'ok', 'title': detail.title, 'desc': detail.desc, 'start_time': detail.start_time,
                         'end_time': detail.end_time, 'student_name': student.user.name, 'student_text': progress.student_text,
-                        'teacher_text': progress.teacher_text}
+                        'teacher_text': progress.teacher_text, 'student_file': progress.file, 'progress_file': detail.file}
             return JsonResponse(response, encoder=ComplexEncoder)
         except Exception as e:
             response = {'msg': str(e)}
@@ -548,15 +549,23 @@ def create_progress(request):
     desc = data.get('desc')
     s_time = data.get('start_time').split('-')
     e_time = data.get('end_time').split('-')
+    file = request.FILES.get('file', None)
     print(title, desc, s_time, e_time)
     start_time = datetime(int(s_time[0]), int(s_time[1]), int(s_time[2]), int(s_time[3]), int(s_time[4]), int(s_time[5]), tzinfo=UTC(0))
     end_time = datetime(int(e_time[0]), int(e_time[1]), int(e_time[2]), int(e_time[3]), int(e_time[4]), int(e_time[5]), tzinfo=UTC(0))
     student_list = Student.objects.all()
-    length = ProgressDetail.objects.all().count()
+    length = ProgressDetail.objects.all().count() + 1
     email_list = []
+    filename = file.name
     try:
-        progress = ProgressDetail.objects.create(unique_id=length+1, title=title, desc=desc,
-                                                 start_time=start_time, end_time=end_time)
+        s_dir = 'templates/progress_file/' + str(length) + '_' + title
+        mkdir(s_dir)
+        with open(s_dir + '/' + filename, 'wb+') as f:
+            for chunk in file.chunks():
+                f.write(chunk)
+        progress = ProgressDetail.objects.create(unique_id=length, title=title, desc=desc,
+                                                 start_time=start_time, end_time=end_time, file=filename)
+
         for student in student_list:
             Progress.objects.create(detail=progress, student=student, teacher=student.teacher)
             email_list.append(student.user.email)
@@ -650,15 +659,16 @@ def progress_detail(request):
         progress = ProgressDetail.objects.get(unique_id=uid)
         detail = Progress.objects.get(detail=progress, student=student)
         if detail.teacher is None:
-            response = {'msg': 'ok', 'title': progress.title, 'desc': progress.desc,
+            response = {'msg': 'ok', 'title': progress.title, 'desc': progress.desc, 'progress_file': progress.file,
                         'student_name': student.user.name, 'student_text': detail.student_text,
-                        'teacher_name': '未选择', 'teacher_text': '空'}
+                        'teacher_name': '未选择', 'teacher_text': '空', 'student_file': detail.file}
             print(response)
             return JsonResponse(response)
         else:
-            response = {'msg': 'ok', 'title': progress.title, 'desc': progress.desc,
+            response = {'msg': 'ok', 'title': progress.title, 'desc': progress.desc, 'progress_file': progress.file,
                         'student_name': student.user.name, 'student_text': detail.student_text,
-                        'teacher_name': student.teacher.user.name, 'teacher_text': detail.teacher_text}
+                        'teacher_name': student.teacher.user.name, 'teacher_text': detail.teacher_text,
+                        'student_file': detail.file}
             print(response)
             return JsonResponse(response)
     except Exception as e:
@@ -751,7 +761,7 @@ def student_file_download(request):
         student = User.objects.get(username=student_id).student
         progress = Progress.objects.get(detail=detail, student=student)
         s_dir = 'templates/student_file/' + detail.unique_id + '_' + detail.title + '/' + student.user.username
-        filename = os.path.join(s_dir, detail.file).replace('\\', '/')
+        filename = os.path.join(s_dir, progress.file).replace('\\', '/')
         response = StreamingHttpResponse(file_iterator(filename))
         response['Content-Type'] = 'application/octet-stream'
         response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(escape_uri_path(filename))
