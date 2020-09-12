@@ -36,22 +36,22 @@
 export default {
   data () {
     return {
-      row:0,
-      radio:{},
+      row: 0,
+      radio: {},
       tables: [],
-      tableData:[{
+      tableData: [{
         dataItem: 'id',
         dataName: '序号'
-      },{
+      }, {
         dataItem: 'title',
         dataName: '进度名称'
-      },{
+      }, {
         dataItem: 'start_time',
         dataName: '开始时间'
-      },{
+      }, {
         dataItem: 'end_time',
         dataName: '结束时间'
-      },{
+      }, {
         dataItem: 'status',
         dataName: '进度状态'
       }]

@@ -62,41 +62,31 @@ export default {
           }
         })
     },
-    commit () {
-      var array = {
-        'id': this.id,
-        'student_text': this.detail_message.student_text
-      }
-      this.$http
-        .post('student_center/S_P_detail/', array)
-        .then(result => {
-          if (result.body === 'ok') {
-            alert('提交成功')
-            this.$router.push({path: '/S_unfinished'})
-          } else {
-            alert(result.body)
-          }
-        })
-    },
     download_progress_file () {
-      var formdata = new window.FormData()
-      formdata.append('id', this.id)
-      this.$http
-        .post('progress_file_download/', formdata, {headers: {
-          'Content-Type': 'multipart/form-data'}})
-        .then(result => {
-          console.log(result.data)
-          const blob = new Blob([result.body])
-          if (window.navigator.msSaveOrOpenBlob) {
-            navigator.msSaveBlob(blob, this.progress_file)
-          } else {
-            let aTag = document.createElement('a')
-            aTag.download = this.progress_file
-            aTag.href = URL.createObjectURL(blob)
-            aTag.click()
-            URL.revokeObjectURL(aTag.href)
-          }
-        })
+      var array = {
+        'id': this.id
+      }
+      this.$axios({
+        method: 'GET',
+        url: 'progress_file_download/',
+        params: array,
+        responseType: 'blob'
+      }).then(res => {
+        console.log(res)
+        let blob = new Blob([res.data], {type: 'application/octet-stream'})
+        console.log('//////////////////')
+        if (window.navigator.msSaveOrOpenBlob) {
+          navigator.msSaveBlob(blob, this.progress_file)
+        } else {
+          let aTag = document.createElement('a')
+          aTag.download = this.student_file
+          console.log(this.student_file)
+          console.log(this.detail_message.progress_file)
+          aTag.href = URL.createObjectURL(blob)
+          aTag.click()
+          URL.revokeObjectURL(aTag.href)
+        }
+      })
     }
   },
   created () {

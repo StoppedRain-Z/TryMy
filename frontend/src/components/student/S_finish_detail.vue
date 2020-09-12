@@ -29,86 +29,97 @@
 
 <script>
 export default {
-    data() {
-        return {
-            id:0,
-            detail_message: {},
-            progress_file: '',
-            progress_show: true,
-            student_show: true,
-            student_file: ''
+  data () {
+    return {
+      id: 0,
+      detail_message: {},
+      progress_file: '',
+      progress_show: true,
+      student_show: true,
+      student_file: ''
+    }
+  },
+  methods: {
+    getData () {
+      this.id = this.$route.query.id
+      this.status = this.$route.query.status
+      var array = {
+        'id': this.id
+      }
+      console.log(array)
+      this.$http
+        .get('student_center/S_P_detail/', {params: array})
+        .then(result => {
+          this.detail_message = result.body
+          console.log(result.body)
+          if (this.detail_message.progress_file === '') {
+            this.detail_message.progress_file = '无相关文件'
+            this.progress_show = false
+          }
+          if (this.detail_message.student_file === '') {
+            this.detail_message.student_file = '无相关文件'
+            this.student_show = false
+          }
+          if (this.detail_message.msg !== 'ok') {
+            alert(this.detail_message.msg)
+          }
+        })
+    },
+    download_progress_file () {
+      var array = {
+        'id': this.id
+      }
+      this.$axios({
+        method: 'GET',
+        url: 'progress_file_download/',
+        params: array,
+        responseType: 'blob'
+      }).then(res => {
+        console.log(res)
+        let blob = new Blob([res.data], {type: 'application/octet-stream'})
+        console.log('//////////////////')
+        if (window.navigator.msSaveOrOpenBlob) {
+          navigator.msSaveBlob(blob, this.progress_file)
+        } else {
+          let aTag = document.createElement('a')
+          aTag.download = this.student_file
+          console.log(this.student_file)
+          console.log(this.detail_message.progress_file)
+          aTag.href = URL.createObjectURL(blob)
+          aTag.click()
+          URL.revokeObjectURL(aTag.href)
         }
+      })
     },
-    methods: {
-        getData() {
-            this.id = this.$route.query.id
-            this.status = this.$route.query.status
-            var array = {
-                "id": this.id
-            }
-            console.log(array)
-            this.$http
-                .get('student_center/S_P_detail/', {params: array})
-                .then(result => {
-                    this.detail_message = result.body
-                    console.log(result.body)
-                    if(this.detail_message.progress_file === ''){
-                        this.detail_message.progress_file = '无相关文件'
-                        this.progress_show = false
-                    }
-                    if(this.detail_message.student_file === ''){
-                        this.detail_message.student_file = '无相关文件'
-                        this.student_show = false
-                    }
-                    if(this.detail_message.msg !== 'ok'){
-                        alert(this.detail_message.msg)
-                    }
-                })
-        },
-        download_progress_file () {
-          var formdata = new window.FormData()
-          formdata.append('id', this.id)
-          this.$http
-            .post('progress_file_download/', formdata, {headers: {
-            'Content-Type': 'multipart/form-data'}})
-            .then(result => {
-            console.log(result.data)
-            const blob = new Blob([result.body])
-            if (window.navigator.msSaveOrOpenBlob) {
-                navigator.msSaveBlob(blob, this.progress_file)
-            } else {
-                let aTag = document.createElement('a')
-                aTag.download = this.progress_file
-                aTag.href = URL.createObjectURL(blob)
-                aTag.click()
-                URL.revokeObjectURL(aTag.href)
-            }
-            })
-        },
-        download_student_file() {
-          var formdata = new window.FormData()
-          formdata.append('id', this.id)
-          formdata.append('student_id', this.detail_message.student_id)
-          this.$http
-            .post('student_file_download/', formdata, {headers: {
-            'Content-Type': 'multipart/form-data'}})
-            .then(result => {
-            console.log(result.data)
-            const blob = new Blob([result.body])
-            if (window.navigator.msSaveOrOpenBlob) {
-                navigator.msSaveBlob(blob, this.student_file)
-            } else {
-                let aTag = document.createElement('a')
-                aTag.download = this.student_file
-                aTag.href = URL.createObjectURL(blob)
-                aTag.click()
-                URL.revokeObjectURL(aTag.href)
-            }
-            })
+    download_student_file () {
+      var array = {
+        'id': this.id,
+        'student_id': this.student_id
+      }
+      this.$axios({
+        method: 'GET',
+        url: 'student_file_download/',
+        params: array,
+        responseType: 'blob'
+      }).then(res => {
+        console.log(res)
+        let blob = new Blob([res.data], {type: 'application/octet-stream'})
+        if (window.navigator.msSaveOrOpenBlob) {
+          navigator.msSaveBlob(blob, this.student_file)
+        } else {
+          let aTag = document.createElement('a')
+          aTag.download = this.student_file
+          console.log(this.student_file)
+          console.log(this.detail_message.student_file)
+          aTag.href = URL.createObjectURL(blob)
+          aTag.click()
+          URL.revokeObjectURL(aTag.href)
         }
-    },
-    created() {
-        this.getData()
-    },
+      })
+    }
+  },
+  created () {
+    this.getData()
+  }
 }
 </script>

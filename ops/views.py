@@ -5,6 +5,7 @@ from django.http import HttpResponse, JsonResponse, StreamingHttpResponse, FileR
 import json
 from datetime import datetime, tzinfo, timedelta, date
 from django.utils import timezone
+from urllib.parse import quote
 import pytz
 from django.db.models import Q
 from django.core.mail import send_mail
@@ -315,8 +316,9 @@ class S_Progress_Detail(View):
                 filename = file.name
                 s_dir = 'templates/student_file/' + str(detail.unique_id) + '_' + detail.title + '/' + student.user.username
                 mkdir(s_dir)
-                with open(s_dir + '/' + filename, 'wb+') as f:
+                with open(s_dir + '/' + filename, 'wb') as f:
                     for chunk in file.chunks():
+                        print(chunk)
                         f.write(chunk)
                 progress.student_file = filename
                 progress.save()
@@ -340,8 +342,14 @@ class T_Choice(View):
         choose_list = Choose.objects.filter(teacher=teacher, student_choice=2, teacher_choice=1)
         json_list = []
         for choose in choose_list:
-            json_item = {"student_id": choose.student.user.username, "name": choose.student.user.name}
-            json_list.append(json_item)
+            if choose.student.student_type == 'U':
+                json_item = {"student_id": choose.student.user.username, "name": choose.student.user.name,
+                             "type": '非留学生'}
+                json_list.append(json_item)
+            elif choose.student.student_type == 'F':
+                json_item = {"student_id": choose.student.user.username, "name": choose.student.user.name,
+                             "type": '留学生'}
+                json_list.append(json_item)
         print(json_list)
         return HttpResponse(json.dumps(json_list))
 
@@ -352,23 +360,29 @@ class T_Choice(View):
         student_id = data.get('student_id')
         choice = data.get('choice')
         teacher = request.user.teacher
-        count = teacher.student_set.all().count()
-        print(count)
-        print(teacher.max_student)
         student = User.objects.get(username=student_id).student
         if student.teacher is None:    # 该学生未选择导师
             choose = Choose.objects.get(student=student, teacher=teacher)
-            if count < teacher.max_student:   # 该老师还有名额
-                choose.teacher_choice = choice
-                choose.save()
-                if choice == '2':
-                    student.teacher = teacher
-                    student.save()
-                return HttpResponse('ok')
-            else:
-                choose.teacher_choice = 3
-                choose.save()
-                return HttpResponse('max')
+            if student.student_type == 'U':
+                count = teacher.student_set.filter(student_type='U').count()
+                max_count = teacher.max_student
+                if count >= max_count:
+                    choose.teacher_choice = 3
+                    choose.save()
+                    return HttpResponse('U_max')
+            elif student.student_type == 'F':
+                count = teacher.student_set.filter(student_type='F').count()
+                max_count = teacher.max_foreign
+                if count >= max_count:
+                    choose.teacher_choice = 3
+                    choose.save
+                    return HttpResponse('F_max')
+            choose.teacher_choice = choice
+            choose.save()
+            if choice == '2':
+                student.teacher = teacher
+                student.save()
+            return HttpResponse('ok')
         else:
             return HttpResponse('student has teacher')
 
@@ -567,8 +581,9 @@ def create_progress(request):
             filename = file.name
             s_dir = 'templates/progress_file/' + str(length) + '_' + title
             mkdir(s_dir)
-            with open(s_dir + '/' + filename, 'wb+') as f:
+            with open(s_dir + '/' + filename, 'wb') as f:
                 for chunk in file.chunks():
+                    print(chunk)
                     f.write(chunk)
         progress = ProgressDetail.objects.create(unique_id=length, title=title, desc=desc,
                                                  start_time=start_time, end_time=end_time, file=filename)
@@ -686,7 +701,7 @@ def progress_detail(request):
 
 def mkdir(path):
     path = path.strip()
-    path = path.replace('\\','/')
+    path = path.replace('\\', '/')
     path = path.rstrip('/')
     is_exists = os.path.exists(path)
     if not is_exists:
@@ -736,39 +751,82 @@ def a_file_upload(request):
 '''
 
 
-def file_iterator(file_name, chunk_size=512):
-    with open(file_name, 'rb+') as f:
+'''def file_iterator(file_name, chunk_size=512):
+    with open(file_name, 'rb') as f:
         while True:
             c = f.read(chunk_size)
             if c:
                 yield c
             else:
-                break
+                break'''
 
 
 def progress_file_download(request):
-    uid = request.POST.get('id')
+
+    uid = request.GET.get('id')
+    print(uid)
     try:
+        '''def file_iterator(file_name, chunk_size=512):
+            with open(file_name, 'rb') as f:
+                while True:
+                    c = f.read(chunk_size)
+                    if c:
+                        yield c
+                    else:
+                        break'''
+
+        def file_iterator(path):
+            size = 1024
+            with open(path, "rb")as f:
+                for data in iter(lambda: f.read(size), b''):
+                    yield data
         detail = ProgressDetail.objects.get(unique_id=uid)
         s_dir = 'templates/progress_file/' + str(detail.unique_id) + '_' + detail.title
         filename = os.path.join(s_dir, detail.file).replace('\\', '/')
         response = StreamingHttpResponse(file_iterator(filename))
+        print(filename)
+        #response = FileResponse(open(filename, 'rb'))
         #extent = detail.file.split('.')[-1]
         #file = open(filename, 'rb+')
         #response = FileResponse(file)
+        #with open(filename, 'rb') as f:
+          #  response = HttpResponse(f)
+           # response['content_type'] = "application/octet-stream"
+            #response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(detail.file.encode('utf-8'))
+            #return response
+
         response['Content-Type'] = 'application/octet-stream'
-        response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(detail.file.encode('utf-8'))
+        response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(quote(detail.file))
         print(response)
         return response
+
     except Exception as e:
         return HttpResponse(str(e))
 
 
 def student_file_download(request):
-    uid = request.POST.get('id')
-    student_id = request.POST.get('student_id')
+    uid = request.GET.get('id')
+    student_id = request.GET.get('student_id')
     print(uid, student_id)
     try:
+        '''
+        def file_iterator(file_name, chunk_size=512):
+            print(file_name)
+            with open(file_name, 'rb') as f:
+                while True:
+                    c = f.read(chunk_size)
+                    print(c)
+                    if c:
+                        yield c
+                    else:
+                        break
+                        '''
+
+        def file_iterator(path):
+            size = 1024
+            with open(path, "rb")as f:
+                for data in iter(lambda: f.read(size), b''):
+                    yield data
         detail = ProgressDetail.objects.get(unique_id=uid)
         student = User.objects.get(username=student_id).student
         progress = Progress.objects.get(detail=detail, student=student)

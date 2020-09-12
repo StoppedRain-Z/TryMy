@@ -74,48 +74,56 @@ export default {
         })
     },
     download_progress_file () {
-      var formdata = new window.FormData()
-      formdata.append('id', this.id)
-      this.$http
-        .post('progress_file_download/', formdata, {headers: {
-          'Content-Type': 'multipart/form-data'}})
-        .then(result => {
-          console.log(result.data)
-          const blob = new Blob([result.body])
-          if (window.navigator.msSaveOrOpenBlob) {
-            navigator.msSaveBlob(blob, this.progress_file)
-          } else {
-            let aTag = document.createElement('a')
-            aTag.download = this.progress_file
-            aTag.href = URL.createObjectURL(blob)
-            aTag.click()
-            URL.revokeObjectURL(aTag.href)
-          }
-        })
+      var array = {
+        'id': this.id
+      }
+      this.$axios({
+        method: 'GET',
+        url: 'progress_file_download/',
+        params: array,
+        responseType: 'blob'
+      }).then(res => {
+        console.log(res)
+        let blob = new Blob([res.data], {type: 'application/octet-stream'})
+        console.log('//////////////////')
+        if (window.navigator.msSaveOrOpenBlob) {
+          navigator.msSaveBlob(blob, this.progress_file)
+        } else {
+          let aTag = document.createElement('a')
+          aTag.download = this.student_file
+          console.log(this.student_file)
+          console.log(this.detail_message.progress_file)
+          aTag.href = URL.createObjectURL(blob)
+          aTag.click()
+          URL.revokeObjectURL(aTag.href)
+        }
+      })
     },
     download_student_file () {
-      var formdata = new window.FormData()
-      formdata.append('id', this.id)
-      formdata.append('student_id', this.student_id)
-      console.log(formdata)
-      this.$http
-        .post('student_file_download/', formdata, {headers: {
-          'Content-Type': 'multipart/form-data'}}, {responseType: 'blob'})
-        .then(result => {
-          console.log(result.data)
-          const blob = new Blob([result.data])
-          if (window.navigator.msSaveOrOpenBlob) {
-            navigator.msSaveBlob(blob, this.student_file)
-          } else {
-            let aTag = document.createElement('a')
-            aTag.download = this.student_file
-            console.log(this.student_file)
-            console.log(this.detail_message.student_file)
-            aTag.href = URL.createObjectURL(blob)
-            aTag.click()
-            URL.revokeObjectURL(aTag.href)
-          }
-        })
+      var array = {
+        'id': this.id,
+        'student_id': this.student_id
+      }
+      this.$axios({
+        method: 'GET',
+        url: 'student_file_download/',
+        params: array,
+        responseType: 'blob'
+      }).then(res => {
+        console.log(res)
+        let blob = new Blob([res.data], {type: 'application/octet-stream'})
+        if (window.navigator.msSaveOrOpenBlob) {
+          navigator.msSaveBlob(blob, this.student_file)
+        } else {
+          let aTag = document.createElement('a')
+          aTag.download = this.student_file
+          console.log(this.student_file)
+          console.log(this.detail_message.student_file)
+          aTag.href = URL.createObjectURL(blob)
+          aTag.click()
+          URL.revokeObjectURL(aTag.href)
+        }
+      })
     }
   },
   created () {
