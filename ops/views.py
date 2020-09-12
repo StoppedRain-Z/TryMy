@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, reverse
 from django.views import View
 from .models import *
-from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse, FileResponse
 import json
 from datetime import datetime, tzinfo, timedelta, date
 from django.utils import timezone
@@ -556,8 +556,8 @@ def create_progress(request):
     e_time = data.get('end_time').split('-')
     file = request.FILES.get('file', None)
     print(title, desc, s_time, e_time)
-    start_time = datetime(int(s_time[0]), int(s_time[1]), int(s_time[2]), int(s_time[3]), int(s_time[4]), int(s_time[5]), tzinfo=UTC(0))
-    end_time = datetime(int(e_time[0]), int(e_time[1]), int(e_time[2]), int(e_time[3]), int(e_time[4]), int(e_time[5]), tzinfo=UTC(0))
+    start_time = datetime(int(s_time[0]), int(s_time[1]), int(s_time[2]), int(s_time[3]), int(s_time[4]), int(s_time[5]))
+    end_time = datetime(int(e_time[0]), int(e_time[1]), int(e_time[2]), int(e_time[3]), int(e_time[4]), int(e_time[5]))
     student_list = Student.objects.all()
     length = ProgressDetail.objects.all().count() + 1
     email_list = []
@@ -737,7 +737,7 @@ def a_file_upload(request):
 
 
 def file_iterator(file_name, chunk_size=512):
-    with open(file_name) as f:
+    with open(file_name, 'rb+') as f:
         while True:
             c = f.read(chunk_size)
             if c:
@@ -753,8 +753,12 @@ def progress_file_download(request):
         s_dir = 'templates/progress_file/' + str(detail.unique_id) + '_' + detail.title
         filename = os.path.join(s_dir, detail.file).replace('\\', '/')
         response = StreamingHttpResponse(file_iterator(filename))
+        #extent = detail.file.split('.')[-1]
+        #file = open(filename, 'rb+')
+        #response = FileResponse(file)
         response['Content-Type'] = 'application/octet-stream'
-        response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(filename.encode('utf-8'))
+        response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(detail.file.encode('utf-8'))
+        print(response)
         return response
     except Exception as e:
         return HttpResponse(str(e))
