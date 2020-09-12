@@ -286,7 +286,7 @@ class S_Progress_Detail(View):
             response = {'msg': 'ok', 'title': detail.title, 'desc': detail.desc, 'start_time': detail.start_time,
                         'end_time': detail.end_time, 'student_text': progress.student_text,
                         'teacher_text': progress.teacher_text, 'student_id':student.user.username,
-                        'student_file': progress.file, 'progress_file': detail.file}
+                        'student_file': progress.student_file, 'progress_file': detail.file}
             return JsonResponse(response, encoder=ComplexEncoder)
         except Exception as e:
             response = {'msg': str(e)}
@@ -490,7 +490,7 @@ class T_Progress_Detail(View):
             progress = Progress.objects.get(detail=detail, teacher=teacher, student=student)
             response = {'msg': 'ok', 'title': detail.title, 'desc': detail.desc, 'start_time': detail.start_time,
                         'end_time': detail.end_time, 'student_name': student.user.name, 'student_text': progress.student_text,
-                        'teacher_text': progress.teacher_text, 'student_file': progress.file, 'progress_file': detail.file}
+                        'teacher_text': progress.teacher_text, 'student_file': progress.student_file, 'progress_file': detail.file}
             return JsonResponse(response, encoder=ComplexEncoder)
         except Exception as e:
             response = {'msg': str(e)}
@@ -556,13 +556,15 @@ def create_progress(request):
     student_list = Student.objects.all()
     length = ProgressDetail.objects.all().count() + 1
     email_list = []
-    filename = file.name
+    filename = ''
     try:
-        s_dir = 'templates/progress_file/' + str(length) + '_' + title
-        mkdir(s_dir)
-        with open(s_dir + '/' + filename, 'wb+') as f:
-            for chunk in file.chunks():
-                f.write(chunk)
+        if file is not None:
+            filename = file.name
+            s_dir = 'templates/progress_file/' + str(length) + '_' + title
+            mkdir(s_dir)
+            with open(s_dir + '/' + filename, 'wb+') as f:
+                for chunk in file.chunks():
+                    f.write(chunk)
         progress = ProgressDetail.objects.create(unique_id=length, title=title, desc=desc,
                                                  start_time=start_time, end_time=end_time, file=filename)
 
@@ -661,14 +663,14 @@ def progress_detail(request):
         if detail.teacher is None:
             response = {'msg': 'ok', 'title': progress.title, 'desc': progress.desc, 'progress_file': progress.file,
                         'student_name': student.user.name, 'student_text': detail.student_text,
-                        'teacher_name': '未选择', 'teacher_text': '空', 'student_file': detail.file}
+                        'teacher_name': '未选择', 'teacher_text': '空', 'student_file': detail.student_file}
             print(response)
             return JsonResponse(response)
         else:
             response = {'msg': 'ok', 'title': progress.title, 'desc': progress.desc, 'progress_file': progress.file,
                         'student_name': student.user.name, 'student_text': detail.student_text,
                         'teacher_name': student.teacher.user.name, 'teacher_text': detail.teacher_text,
-                        'student_file': detail.file}
+                        'student_file': detail.student_file}
             print(response)
             return JsonResponse(response)
     except Exception as e:
@@ -743,7 +745,7 @@ def progress_file_download(request):
     uid = request.POST.get('id')
     try:
         detail = ProgressDetail.objects.get(unique_id=uid)
-        s_dir = 'templates/progress_file/' + detail.unique_id + '_' + detail.title
+        s_dir = 'templates/progress_file/' + str(detail.unique_id) + '_' + detail.title
         filename = os.path.join(s_dir, detail.file).replace('\\', '/')
         response = StreamingHttpResponse(file_iterator(filename))
         response['Content-Type'] = 'application/octet-stream'
@@ -756,12 +758,14 @@ def progress_file_download(request):
 def student_file_download(request):
     uid = request.POST.get('id')
     student_id = request.POST.get('student_id')
+    print(uid, student_id)
     try:
         detail = ProgressDetail.objects.get(unique_id=uid)
         student = User.objects.get(username=student_id).student
         progress = Progress.objects.get(detail=detail, student=student)
-        s_dir = 'templates/student_file/' + detail.unique_id + '_' + detail.title + '/' + student.user.username
-        filename = os.path.join(s_dir, progress.file).replace('\\', '/')
+        s_dir = 'templates/student_file/' + str(detail.unique_id) + '_' + detail.title + '/' + student.user.username
+        filename = os.path.join(s_dir, progress.student_file).replace('\\', '/')
+        print(filename)
         response = StreamingHttpResponse(file_iterator(filename))
         response['Content-Type'] = 'application/octet-stream'
         response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(escape_uri_path(filename))

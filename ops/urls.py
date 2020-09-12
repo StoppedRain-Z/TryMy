@@ -26,7 +26,7 @@ urlpatterns = [
     path('assistant_center/progress_student_detail/', progress_detail),
     path('student_detail/', student_detail),   # 学生个人信息，导师和辅导员查看
     # path('s_file_upload/', s_file_upload),
-    path('s_file_download/', student_file_download),
+    path('student_file_download/', student_file_download),
     # path('a_file_upload/', a_file_upload),
     path('progress_file_download/', progress_file_download),
 ]

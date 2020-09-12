@@ -34,3 +34,4 @@ class Progress(models.Model):
     teacher_ok = models.BooleanField(default=False)
     student_file = models.CharField(max_length=128, default='')
 
+

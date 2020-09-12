@@ -5,11 +5,13 @@
         <el-form :model="detail_message" ref="form" :rules="rules" label-width="100px" class="demo-form"
             cell-style="font-weight: 700;">
             <el-form-item label="进度名称">{{detail_message.title}}</el-form-item>
+            <el-form-item label="进度相关文件">{{detail_message.progress_file}}</el-form-item>
             <el-form-item label="详细描述">{{detail_message.desc}}</el-form-item>
             <el-form-item label="开始时间">{{detail_message.start_time}}</el-form-item>
             <el-form-item label="结束时间">{{detail_message.end_time}}</el-form-item>
             <el-form-item label="学生姓名">{{detail_message.student_name}}</el-form-item>
-            <el-form-item label="学生提交">{{detail_message.student_text}}</el-form-item>
+            <el-form-item label="学生反馈">{{detail_message.student_text}}</el-form-item>
+            <el-form-item label="学生作业文件">{{detail_message.student_file}}</el-form-item>
             <el-form-item label="教师反馈">{{detail_message.student_text}}</el-form-item>
 
         </el-form>
