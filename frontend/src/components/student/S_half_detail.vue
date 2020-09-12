@@ -15,18 +15,15 @@
             <el-form-item label="进度提交" v-show = "unchangeshow">
                 {{detail_message.student_text}} 
             </el-form-item>
-            <el-form-item label="上传文件">
-              <div>{{detail_message.student_file}}</div>
-              <el-button type="primary" @click="download_student_file" v-show="student_show">下载文件</el-button>
-            </el-form-item>
-
-
             <el-form-item label="进度提交" v-show = "changeshow">
                 <el-input v-model="detail_message.student_text" type="textarea"></el-input>
             </el-form-item>
-            <el-form-item label="上传文件" v-show = "changeshow">
-                <input style="width: 260px" type="file" @change="getFile($event)"></input>
+            <el-form-item label="上传文件">
+              <div>{{detail_message.student_file}}</div>
+              <input style="width: 260px" type="file" @change="getFile($event)" v-show="changeshow"></input>
+              <el-button type="primary" @click="download_student_file" v-show="student_show">下载文件</el-button>
             </el-form-item>
+
 
             <el-form-item label="教师反馈">{{detail_message.teacher_text}}</el-form-item>
         </el-form>
@@ -52,7 +49,9 @@ export default {
             unchangeshow: true,
             changeshow: false,
             progress_show: true,
-            progress_file: ''
+            progress_file: '',
+            student_show: true,
+            student_file: ''
         }
     },
     methods: {
@@ -68,6 +67,14 @@ export default {
                 .then(result => {
                     this.detail_message = result.body
                     console.log(result.body)
+                    if(this.detail_message.progress_file === ''){
+                        this.detail_message.progress_file = '无相关文件'
+                        this.progress_show = false
+                    }
+                    if(this.detail_message.student_file === ''){
+                        this.detail_message.student_file = '无相关文件'
+                        this.student_show = false
+                    }
                     if(this.detail_message.msg !== 'ok'){
                         alert(this.detail_message.msg)
                     }
@@ -96,11 +103,14 @@ export default {
                 .then(result => {
                     if(result.body === 'ok'){
                         alert('提交成功')
-                        this.reload
+                        this.reload()
                     }else{
                         alert(result.body)
                     }
                 })
+        },
+        getFile(event) {
+            this.detail_message.file = event.target.files[0]
         },
         download_progress_file () {
         var formdata = new window.FormData()
