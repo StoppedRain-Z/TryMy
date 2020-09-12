@@ -75,8 +75,10 @@ export default {
       array.append('desc', this.formData.desc)
       array.append('start_time', str1)
       array.append('end_time', str2)
-      array.append('file', this.formData.file)
-      console.log(this.formData.file)
+      if(this.formData.file !== undefined){
+        array.append('file', this.formData.file)
+      }
+      console.log(array)
       this.$http
         .post('assistant_center/create_progress/', array, {
            headers:{
@@ -89,7 +91,7 @@ export default {
             alert("该任务发布成功")
             this.reset()
           } else {
-            alert("未知错误，请重新发布")
+            alert(result.body)
           }
         })
     },

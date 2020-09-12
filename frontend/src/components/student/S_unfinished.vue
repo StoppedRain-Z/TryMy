@@ -65,6 +65,7 @@ export default {
           if(this.tables.msg === 'user does not found'){
             alert(this.tables.msg)
           }else{
+            console.log(result.body)
             this.tables = result.body
           }
         })
