@@ -57,7 +57,7 @@ class RegisterView(View):
 class LoginView(View):
     @staticmethod
     def get(request):
-        return render(request, 'login.html')
+        return render(request, 'login')
 
     @staticmethod
     def post(request):

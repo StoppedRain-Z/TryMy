@@ -33,11 +33,15 @@ export default {
         console.log(result.body);
         if(result.body.msg === 'ok'){
           //alert("登录成功");
+
           if(result.body.user_type === 'S'){
+            this.$store.commit('login',1)
             this.$router.push({path: '/student_center'})
           }else if(result.body.user_type === 'T'){
+            this.$store.commit('login',2)
             this.$router.push({path:'/teacher_center'})
           }else if(result.body.user_type === 'A'){
+            this.$store.commit('login',3)
             this.$router.push({path:'/assistant_center'})
           }
 

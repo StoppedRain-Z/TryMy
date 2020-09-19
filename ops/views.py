@@ -12,6 +12,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
 import operator
 import os
+from django.utils.decorators import method_decorator
 from django.utils.encoding import escape_uri_path
 # Create your views here.
 
@@ -121,6 +122,7 @@ class S_Choice(View):
 
 
 class S_Detail(View):
+
     @staticmethod
     def get(request):
         user = request.user
@@ -160,6 +162,7 @@ class S_Detail(View):
 '''
 
 
+@login_required
 def student_detail(request):
     uid = request.POST.get('id')
     try:
@@ -179,6 +182,7 @@ def student_detail(request):
 '''
 
 
+@login_required
 def confirm_list_s(request):
     user = request.user
     student = Student.objects.get(user=user)
@@ -204,6 +208,7 @@ def confirm_list_s(request):
 '''
 
 
+@login_required
 def s_progress_list_unfinished(request):
     student = request.user.student
     if student is None:
@@ -235,6 +240,7 @@ def s_progress_list_unfinished(request):
 '''
 
 
+@login_required
 def s_half(request):
     student = request.user.student
     if student is None:
@@ -258,6 +264,7 @@ def s_half(request):
 '''
 
 
+@login_required
 def s_progress_list_finished(request):
     student = request.user.student
     if student is None:
@@ -390,6 +397,9 @@ class T_Choice(View):
 '''
 导师查看已确认过的志愿列表
 '''
+
+
+@login_required
 def confirm_list_t(request):
     teacher = request.user.teacher
     choose_list = Choose.objects.filter(teacher=teacher).exclude(teacher_choice=1)
@@ -411,6 +421,7 @@ def confirm_list_t(request):
 '''
 
 
+@login_required
 def t_progress_list_unfinished(request):
     teacher = request.user.teacher
     response = {}
@@ -447,6 +458,7 @@ def t_progress_list_unfinished(request):
 '''
 
 
+@login_required
 def t_half(request):
     teacher = request.user.teacher
     response = {}
@@ -472,6 +484,7 @@ def t_half(request):
 '''
 
 
+@login_required
 def t_progress_list_finished(request):
     teacher = request.user.teacher
     response = {}
@@ -543,6 +556,7 @@ class T_Progress_Detail(View):
 '''
 
 
+@login_required
 def student_list(request):
     s_list = Student.objects.all()
     response = []
@@ -562,6 +576,7 @@ def student_list(request):
 '''
 
 
+@login_required
 def create_progress(request):
     data = request.POST
     title = data.get('title')
@@ -605,6 +620,7 @@ def create_progress(request):
 '''
 
 
+@login_required
 def a_progress_list(request):
     progress_list = ProgressDetail.objects.all().order_by('-start_time')
     response = []
@@ -620,6 +636,7 @@ def a_progress_list(request):
 '''
 
 
+@login_required
 def a_plist_student_list(request):
     uid = request.GET.get('id')
     print(request.GET)
@@ -671,6 +688,7 @@ def a_plist_student_list(request):
 '''
 
 
+@login_required
 def progress_detail(request):
     uid = request.GET.get('id')
     student_id = request.GET.get('student_id')
@@ -697,6 +715,7 @@ def progress_detail(request):
         response = {'msg': str(e)}
         print(response)
         return JsonResponse(response)
+
 
 
 def mkdir(path):
@@ -761,20 +780,12 @@ def a_file_upload(request):
                 break'''
 
 
+@login_required
 def progress_file_download(request):
 
     uid = request.GET.get('id')
     print(uid)
     try:
-        '''def file_iterator(file_name, chunk_size=512):
-            with open(file_name, 'rb') as f:
-                while True:
-                    c = f.read(chunk_size)
-                    if c:
-                        yield c
-                    else:
-                        break'''
-
         def file_iterator(path):
             size = 1024
             with open(path, "rb")as f:
@@ -785,16 +796,6 @@ def progress_file_download(request):
         filename = os.path.join(s_dir, detail.file).replace('\\', '/')
         response = StreamingHttpResponse(file_iterator(filename))
         print(filename)
-        #response = FileResponse(open(filename, 'rb'))
-        #extent = detail.file.split('.')[-1]
-        #file = open(filename, 'rb+')
-        #response = FileResponse(file)
-        #with open(filename, 'rb') as f:
-          #  response = HttpResponse(f)
-           # response['content_type'] = "application/octet-stream"
-            #response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(detail.file.encode('utf-8'))
-            #return response
-
         response['Content-Type'] = 'application/octet-stream'
         response['Content-Disposition'] = "attachment;filename*=utf-8''{}".format(quote(detail.file))
         print(response)
@@ -804,24 +805,12 @@ def progress_file_download(request):
         return HttpResponse(str(e))
 
 
+@login_required
 def student_file_download(request):
     uid = request.GET.get('id')
     student_id = request.GET.get('student_id')
     print(uid, student_id)
     try:
-        '''
-        def file_iterator(file_name, chunk_size=512):
-            print(file_name)
-            with open(file_name, 'rb') as f:
-                while True:
-                    c = f.read(chunk_size)
-                    print(c)
-                    if c:
-                        yield c
-                    else:
-                        break
-                        '''
-
         def file_iterator(path):
             size = 1024
             with open(path, "rb")as f:

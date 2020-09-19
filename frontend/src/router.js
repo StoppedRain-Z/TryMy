@@ -30,6 +30,8 @@ import S_half_detail from './components/student/S_half_detail'
 import T_half from './components/teacher/T_half'
 import T_half_detail from './components/teacher/T_half_detail'
 
+import store from './store'
+
 var router = new VueRouter({
   routes: [
     {path: '/', component: index},
@@ -38,46 +40,51 @@ var router = new VueRouter({
     {
       path: '/student_center',
       component: student_center,
+      meta: {login: true},
       children: [
-        {path: '', component: center},
-        {path: '/choose_teacher', component: choose_teacher},
-        {path: '/choose_queue_S', component: choose_queue_S},
-        {path: '/S_unfinished', component: S_unfinished},
-        {path: '/S_half', component: S_half},
-        {path: '/S_finished', component: S_finished},
-        {path: '/S_finish_detail', component: S_finish_detail},
-        {path: '/S_unfinish_detail', component: S_unfinish_detail},
-        {path: '/S_half_detail', component: S_half_detail},
-        {path: '/student_message', component: student_message}
+        {path: '', component: center, meta: {login: true}},
+        {path: '/choose_teacher', component: choose_teacher, meta: {login: true}},
+        {path: '/choose_queue_S', component: choose_queue_S, meta: {login: true}},
+        {path: '/S_unfinished', component: S_unfinished, meta: {login: true}},
+        {path: '/S_half', component: S_half, meta: {login: true}},
+        {path: '/S_finished', component: S_finished, meta: {login: true}},
+        {path: '/S_finish_detail', component: S_finish_detail, meta: {login: true}},
+        {path: '/S_unfinish_detail', component: S_unfinish_detail, meta: {login: true}},
+        {path: '/S_half_detail', component: S_half_detail, meta: {login: true}},
+        {path: '/student_message', component: student_message, meta: {login: true}}
       ]
     },
     {
       path: '/teacher_center',
       component: teacher_center,
+      meta: {login: true},
       children: [
-        {path: '', component: center},
-        {path: '/choose_student', component: choose_student},
-        {path: '/choose_queue_T', component: choose_queue_T},
-        {path: '/T_unfinished', component: T_unfinished},
-        {path: '/T_finished', component: T_finished},
-        {path: '/T_half', component: T_half},
-        {path: '/T_half_detail', component: T_half_detail},
-        {path: '/T_finished_detail', component: T_finished_detail},
-        {path: '/T_unfinished_detail', component: T_unfinished_detail}
+        {path: '', component: center, meta: {login: true}},
+        {path: '/choose_student', component: choose_student, meta: {login: true}},
+        {path: '/choose_queue_T', component: choose_queue_T, meta: {login: true}},
+        {path: '/T_unfinished', component: T_unfinished, meta: {login: true}},
+        {path: '/T_finished', component: T_finished, meta: {login: true}},
+        {path: '/T_half', component: T_half, meta: {login: true}},
+        {path: '/T_half_detail', component: T_half_detail, meta: {login: true}},
+        {path: '/T_finished_detail', component: T_finished_detail, meta: {login: true}},
+        {path: '/T_unfinished_detail', component: T_unfinished_detail, meta: {login: true}}
       ]
     },
     {
       path: '/assistant_center',
       component: assistant_center,
+      meta: {login: true},
       children: [
-        {path: '', component: center},
-        {path: '/create_progress', component: create_progress},
-        {path: '/check_progress', component: check_progress},
-        {path: '/teacher_to_student', component: teacher_to_student},
-        {path: '/progress_student', component: progress_student},
-        {path: '/progress_student_detail', component: progress_student_detail}
+        {path: '', component: center, meta: {login: true}},
+        {path: '/create_progress', component: create_progress, meta: {login: true}},
+        {path: '/check_progress', component: check_progress, meta: {login: true}},
+        {path: '/teacher_to_student', component: teacher_to_student, meta: {login: true}},
+        {path: '/progress_student', component: progress_student, meta: {login: true}},
+        {path: '/progress_student_detail', component: progress_student_detail, meta: {login: true}}
       ]
     }
   ]
 })
+
+
 export default router

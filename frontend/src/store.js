@@ -23,7 +23,7 @@ var store = new Vuex.Store({
         state.islogin = false;
       },
       setSession(username){
-        sessionStorage.setItem("username", username);
+        sessionStorage.setItem("cardID", username);
       },
       writelist(state, data) {
         state.list = data;

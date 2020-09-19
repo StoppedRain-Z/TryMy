@@ -17,10 +17,11 @@ Vue.use(VueRouter)
 Vue.use(VueResource)
 Vue.use(Vuex)
 
-Vue.prototype.$axios = axios;
+Vue.prototype.$axios = axios
 
 Vue.http.options.root = 'http://127.0.0.1:8000'
 Vue.http.options.emulateJSON = true
+
 
 /* eslint-disable no-new */
 new Vue({
@@ -28,4 +29,17 @@ new Vue({
   render: h => h(App),
   router,
   store
+})
+
+router.beforeEach((to, from, next) =>{
+  if (to.matched.some(record => record.meta.login)) {
+    if (store.state.islogin) {
+      console.log(store.state.islogin)
+      next()
+    } else {
+      next({path: '/login', query: {redirect: to.fullPath}})
+    }
+  } else {
+    next()
+  }
 })
