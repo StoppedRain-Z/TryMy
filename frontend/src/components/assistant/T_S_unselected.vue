@@ -20,11 +20,6 @@
                 style="width:90%">
               </el-table-column>
             </template>
-            <el-table-column label="操作" style="width:5%" align="center">
-            <template slot-scope="scope">
-              <el-button type="info" @click="cancel(scope.row)" v-show= "scope.row.teacher_choice!=='已取消'">取消</el-button>
-            </template>
-          </el-table-column>
           </el-table>
         </div>
       </el-main>
@@ -37,43 +32,29 @@
 export default {
   data () {
     return {
-      tables:[],
+      tables:[{
+          "teacher_name": 'a',
+          "student_name": '12'
+          },{
+          "teacher_name": 'a',
+          "student_name": '13'
+          }],
       tableData:[{
-        dataItem: 'name',
-        dataName: '教师姓名'
+        dataItem: 'student_name',
+        dataName: '学生姓名'
       },{
-        dataItem: 'teacher_choice',
-        dataName: '教师反馈'
+        dataItem: 'teacher_name',
+        dataName: '教师姓名'
       }]
     }
   },
   methods: {
     getData() {
       this.$http
-        .get('student_center/choose_queue')
+        .get('assistant_center/teacher_to_student_unselected')
         .then(result => {
           this.tables = result.body
-          console.log(this.tables)
-        })
-      
-    },
-    cancel(row){
-      console.log(row)
-      var array = {
-        'teacher_id': row.teacher_id
-      }
-      console.log(array)
-      this.$http
-        .post('student_center/cancel_choose/', array)
-        .then(result => {
-          console.log(result.body)
-          if (result.body === 'ok') {
-            alert('已取消')
-          } else {
-            alert(result.body)
-          }
-          this.getData()
-        })
+        }) 
     }
   },
   created () {

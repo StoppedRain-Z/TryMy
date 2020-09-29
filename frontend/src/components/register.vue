@@ -34,7 +34,7 @@
       <el-form-item label="个人主页" v-show="showT">
         <el-input v-model="registerData.teacher_info"></el-input>
       </el-form-item>
-      <el-form-item label="身份" prop="student_type">
+      <el-form-item label="身份" prop="student_type" v-show="showS">
         <el-select v-model="registerData.student_type">
           <el-option key="非留学生" label="非留学生" value="U"></el-option>
           <el-option key="留学生" label="留学生" value="F"></el-option>
@@ -42,7 +42,7 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="register">注册</el-button>
-        <router-link to="/">
+        <router-link to="/login">
           <el-button>返回</el-button>
         </router-link>
       </el-form-item>
@@ -65,7 +65,8 @@ export default {
         student_type: ''
       },
       showA: true,
-      showT: false
+      showT: false,
+      showS: true
     }
   },
   methods: {
@@ -95,9 +96,15 @@ export default {
       if (value === 'T') {
         this.showA = false
         this.showT = true
-      } else {
+        this.showS = false
+      } else if (value === 'A') {
         this.showA = true
         this.showT = false
+        this.showS = false
+      } else {
+          this.showA = false
+          this.showT = false
+          this.showS = true
       }
     }
   }
