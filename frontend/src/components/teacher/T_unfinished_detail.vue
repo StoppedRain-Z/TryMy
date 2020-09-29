@@ -15,7 +15,6 @@
             <el-form-item label="学生姓名">{{detail_message.student_name}}</el-form-item>
             <el-form-item label="学生反馈">{{detail_message.student_text}}</el-form-item>
             <el-form-item label="学生作业文件">{{detail_message.student_file}}</el-form-item>
-            <el-form-item label="教师反馈">{{detail_message.student_text}}</el-form-item>
 
         </el-form>
         <router-link :to="{path:'/T_unfinished'}">

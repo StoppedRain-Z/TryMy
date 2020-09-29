@@ -33,10 +33,10 @@ export default {
   data () {
     return {
       tables:[{
-          "teacher_name": 'a',
+          "teacher_name": '未选择',
           "student_name": '12'
           },{
-          "teacher_name": 'a',
+          "teacher_name": '未选择',
           "student_name": '13'
           }],
       tableData:[{
@@ -58,7 +58,7 @@ export default {
     }
   },
   created () {
-    this.getData()
+    //this.getData()
   }
 }
 

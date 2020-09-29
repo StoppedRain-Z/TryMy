@@ -17,7 +17,6 @@
               <div>{{detail_message.student_file}}</div>
               <el-button type="primary" @click="download_student_file" v-show="student_show">下载文件</el-button>
             </el-form-item>
-            <el-form-item label="教师反馈">{{detail_message.teacher_text}}</el-form-item>
         </el-form>
         <router-link :to="{path:'/S_finished'}">
         <el-button  type="primary">返回</el-button>

@@ -18,7 +18,14 @@
               <div>{{detail_message.student_file}}</div>
               <el-button  type="primary" @click="download_student_file" v-show="student_show">下载文件</el-button>
             </el-form-item>
-            <el-form-item label="教师反馈">
+            <el-form-item label="完成情况">
+              <el-select v-model="detail_message.status">
+                <el-option label="超进度完成" value="1"></el-option>
+                <el-option label="按时完成" value="2"></el-option>
+                <el-option label="未达到预期" value="3"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="教师评价">
                 <el-input v-model="detail_message.teacher_text" type="textarea"></el-input>
             </el-form-item>
 
@@ -79,8 +86,10 @@ export default {
       var array = {
         'id': this.id,
         'teacher_text': this.detail_message.teacher_text,
-        'student_id': this.student_id
+        'student_id': this.student_id,
+        'status': this.detail_message.status
       }
+      console.log(array)
       this.$http
         .post('teacher_center/T_detail/', array)
         .then(result => {

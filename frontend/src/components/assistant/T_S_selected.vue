@@ -34,10 +34,12 @@ export default {
     return {
       tables:[{
           "teacher_name": 'a',
-          "student_name": '12'
+          "student_name": '12',
+          "institute": '图索'
           },{
           "teacher_name": 'a',
-          "student_name": '13'
+          "student_name": '13',
+          "institute": '图索'
           }],
       tableData:[{
         dataItem: 'student_name',
@@ -46,8 +48,8 @@ export default {
         dataItem: 'teacher_name',
         dataName: '教师姓名'
       },{
-        dataItem: 'institution',
-        dataName: '研究生'
+        dataItem: 'institute',
+        dataName: '研究所'
       }]
     }
   },
@@ -61,7 +63,7 @@ export default {
     }
   },
   created () {
-    this.getData()
+    //this.getData()
   }
 }
 

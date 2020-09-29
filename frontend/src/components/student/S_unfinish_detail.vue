@@ -21,7 +21,6 @@
                 <input style="width: 260px" type="file" @change="getFile($event)"></input>
             </el-form-item>
 
-            <el-form-item label="教师反馈">{{detail_message.teacher_text}}</el-form-item>
         </el-form>
         <el-button type="primary" @click="commit" v-show="isshow">提交</el-button>
         <router-link :to="{path:'/S_unfinished'}">

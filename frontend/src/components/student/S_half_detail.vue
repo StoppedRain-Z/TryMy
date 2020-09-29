@@ -25,7 +25,6 @@
             </el-form-item>
 
 
-            <el-form-item label="教师反馈">{{detail_message.teacher_text}}</el-form-item>
         </el-form>
         <el-button  type="primary" @click="text_change" v-show="unchangeshow">修改</el-button>
         <el-button type="primary" @click="commit" v-show="changeshow">提交</el-button>
