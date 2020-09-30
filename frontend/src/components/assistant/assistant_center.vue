@@ -16,6 +16,7 @@
           <el-submenu index="3">
             <template slot="title"><i class="el-icon-menu"></i>导入学生</template>
             <el-menu-item index="add_student">批量导入同学信息</el-menu-item>
+            <el-menu-item index="add_teacher">批量导入导师信息</el-menu-item>
           </el-submenu>
         </el-menu>
       </el-aside>
