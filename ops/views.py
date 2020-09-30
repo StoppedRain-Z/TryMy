@@ -12,9 +12,31 @@ from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
 import operator
 import os
+import xlrd
+from users.views import check_email, check_mobile
 from django.utils.decorators import method_decorator
 from django.utils.encoding import escape_uri_path
 # Create your views here.
+
+
+EMAIL_ADDRESS = 'zhangrt20@126.com'
+
+
+def teacher_desc(name, title):
+    start = '老师，您好'
+    content = '您的学生' + name + '已完成毕设进度检查：' + title
+    end = '请您及时上线查看批改'
+    wish = '此邮件为系统自动邮件，请勿回复'
+    return start + content + end + wish
+
+
+def desc_detail(title, desc):
+    hello = '同学，你好'
+    head_desc = '你的辅导员发布了新的毕设进度检查。'
+    new_title = '进度标题：' + title
+    new_desc = '进度描述：' + desc
+    end = '此邮件为系统自动邮件，请勿回复'
+    return hello + head_desc + new_title + new_desc + end
 
 
 class ComplexEncoder(json.JSONEncoder):
@@ -29,7 +51,7 @@ class ComplexEncoder(json.JSONEncoder):
 
 class UTC(tzinfo):
     """UTC"""
-    def __init__(self,offset = 0):
+    def __init__(self, offset=0):
         self._offset = offset
 
     def utcoffset(self, dt):
@@ -71,16 +93,20 @@ class S_Choice(View):
     @staticmethod
     def get(request):
         teacher_list = Teacher.objects.all()
+        student = request.user.student
+        grade = student.grade
         json_list = []
         for teacher in teacher_list:
-            u_count = teacher.student_set.filter(student_type='U').count()
-            f_count = teacher.student_set.filter(student_type='F').count()
+            u_count = teacher.student_set.filter(student_type='U', grade=grade).count()
+            f_count = teacher.student_set.filter(student_type='F', grade=grade).count()
             json_item = {"teacher_name": teacher.user.name,
                          "teacher_institute": teacher.institute,
                          "teacher_info": teacher.teacher_info,
                          "teacher_id": teacher.user.username,
                          "student_count": str(u_count) + '/' + str(teacher.max_student),
-                         "foreign_count": str(f_count) + '/' + str(teacher.max_foreign)}
+                         "foreign_count": str(f_count) + '/' + str(teacher.max_foreign),
+                         "teacher_mobile": teacher.user.mobile,
+                         "teacher_email": teacher.user.email}
 
             json_list.append(json_item)
         print(json_list)
@@ -93,21 +119,22 @@ class S_Choice(View):
         student = request.user.student
         teacher = User.objects.get(username=teacher_id).teacher
         student_type = student.student_type
+        grade = student.grade
         count = 0
         max_count = 0
         if student_type == 'U':
-            count = teacher.student_set.filter(student_type='U').count()
+            count = teacher.student_set.filter(student_type='U', grade=grade).count()
             max_count = teacher.max_student
         elif student_type == 'F':
-            count = teacher.student_set.filter(student_type='F').count()
+            count = teacher.student_set.filter(student_type='F', grade=grade).count()
             max_count = teacher.max_foreign
         print(count)
         print(teacher.max_student)
         if count < max_count:
-            choose_list = Choose.objects.filter(student=student, teacher=teacher).count()
+            choose_list = Choose.objects.filter(student=student, teacher=teacher, grade=student.grade).count()
             print(choose_list)
             if choose_list == 0:
-                Choose.objects.create(student=student, teacher=teacher, teacher_choice=1, student_choice=2)
+                Choose.objects.create(student=student, teacher=teacher, teacher_choice=1, student_choice=2, grade=grade)
                 return HttpResponse('ok')
             else:
                 return HttpResponse('exists')
@@ -132,24 +159,33 @@ class S_Detail(View):
             return JsonResponse(response)
         if student.teacher is None:
             response = {'msg': 'ok', 'student_name': user.name, 'student_id': user.username, 'email': user.email,
-                        'mobile': user.mobile, 'student_type': student.student_type, 'teacher': '未选择', 'institute': '空'}
+                        'mobile': user.mobile, 'student_type': student.student_type, 'teacher': '未选择',
+                        'institute': '空', 'grade': student.grade}
             return JsonResponse(response)
         else:
             response = {'msg': 'ok', 'student_name': user.name, 'student_id': user.username, 'email': user.email,
                         'mobile': user.mobile, 'student_type': student.student_type, 'teacher': student.teacher.user.name,
-                        'institute': student.teacher.institute}
+                        'institute': student.teacher.institute, 'grade': student.grade}
             return JsonResponse(response)
 
     @staticmethod
     def post(request):
         user = request.user
+        student = user.student
         data = request.POST
         email = data.get('email')
         mobile = data.get('mobile')
+        grade = data.get('grade')
+        if not check_email(email):
+            return HttpResponse('邮箱格式错误')
+        if not check_mobile(mobile):
+            return HttpResponse('手机格式错误')
         try:
             user.email = email
             user.mobile = mobile
             user.save()
+            student.grade = grade
+            student.save()
             return HttpResponse('ok')
         except Exception as e:
             print(str(e))
@@ -169,7 +205,7 @@ def student_detail(request):
         user = User.objects.get(username=id)
         student = user.student
         response = {'msg': 'ok', 'student_name': user.name, 'student_id': user.username, 'email': user.email,
-                    'mobile': user.mobile, 'student_type': student.student_type}
+                    'mobile': user.mobile, 'student_type': student.student_type, 'grade': student.grade}
         return JsonResponse(response)
     except Exception as e:
         print(str(e))
@@ -183,10 +219,35 @@ def student_detail(request):
 
 
 @login_required
+def cancel_choose(request):
+    student = request.user.student
+    teacher_id = request.POST.get('teacher_id')
+    try:
+        teacher = User.objects.get(username=teacher_id).teacher
+        choose = Choose.objects.get(student=student, teacher=teacher, grade=student.grade)
+        if choose.teacher_choice == 1:  # 导师未确认
+            choose.teacher_choice = 3
+            choose.student_choice = 4
+            choose.save()
+            return HttpResponse('取消成功')
+        elif choose.teacher_choice == 2:   # 导师已确认
+            choose.teacher_choice = 3
+            choose.student_choice = 4
+            choose.save()
+            student.teacher = None
+            student.save()
+            return HttpResponse('导师关系已取消')
+        elif choose.teacher_choice == 3:
+            return HttpResponse('无需取消')
+    except Exception as e:
+        return HttpResponse(str(e))
+
+
+@login_required
 def confirm_list_s(request):
     user = request.user
     student = Student.objects.get(user=user)
-    choose_list = Choose.objects.filter(student=student, student_choice=2)
+    choose_list = Choose.objects.filter(student=student, student_choice=2, grade=student.grade)
     json_list = []
     for choose in choose_list:
         teacher_choice = choose.teacher_choice
@@ -199,6 +260,12 @@ def confirm_list_s(request):
             choice = '拒绝'
         json_item = {"name": choose.teacher.user.name, "teacher_id": choose.teacher.user.username,
                      "teacher_choice": choice, "teacher_info": choose.teacher.teacher_info}
+        json_list.append(json_item)
+        json_list.sort(key=lambda k: k['teacher_choice'])
+    choose_list = Choose.objects.filter(student=student, student_choice=4, grade=student.grade)
+    for choose in choose_list:
+        json_item = {"name": choose.teacher.user.name, "teacher_id": choose.teacher.user.username,
+                     "teacher_choice": '已取消', "teacher_info": choose.teacher.teacher_info}
         json_list.append(json_item)
     return HttpResponse(json.dumps(json_list))
 
@@ -217,7 +284,7 @@ def s_progress_list_unfinished(request):
     res = []
     now = timezone.now()
     print(now)
-    detail_list = ProgressDetail.objects.filter(start_time__lt=now, end_time__gt=now)
+    detail_list = ProgressDetail.objects.filter(start_time__lt=now, end_time__gt=now, grade=student.grade)
     for detail in detail_list:
         print(detail.title, detail.start_time, detail.end_time)
         progress = Progress.objects.filter(detail=detail, student=student, student_ok=False).count()
@@ -225,7 +292,7 @@ def s_progress_list_unfinished(request):
             json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                          'end_time': detail.end_time, 'status': '未完成'}
             res.append(json_item)
-    detail_list = ProgressDetail.objects.filter(end_time__lt=now)
+    detail_list = ProgressDetail.objects.filter(end_time__lt=now, grade=student.grade)
     for detail in detail_list:
         progress = Progress.objects.filter(detail=detail, student=student, student_ok=False).count()
         if progress != 0:
@@ -249,7 +316,7 @@ def s_half(request):
     res = []
     now = timezone.now()
     print(now)
-    detail_list = ProgressDetail.objects.filter(start_time__lt=now)
+    detail_list = ProgressDetail.objects.filter(start_time__lt=now, grade=student.grade)
     for detail in detail_list:
         progress = Progress.objects.filter(detail=detail, student=student, student_ok=True, teacher_ok=False).count()
         if progress != 0:
@@ -270,7 +337,15 @@ def s_progress_list_finished(request):
     if student is None:
         response = {'msg': 'user does not found'}
         return HttpResponse(json.dumps(response))
-    progress_list = Progress.objects.filter(student=student, student_ok=True, teacher_ok=True)
+    detail_list = ProgressDetail.objects.filter(grade=student.grade)
+    progress_list = []
+    for detail in detail_list:
+        try:
+            progress = Progress.objects.get(detail=detail, student=student, student_ok=True, teacher_ok=True)
+            progress_list.append(progress)
+        except Exception as e:
+            print(str(e))
+            continue
     res = []
     for progress in progress_list:
         json_item = {'id': progress.detail.unique_id, 'title': progress.detail.title,
@@ -290,12 +365,11 @@ class S_Progress_Detail(View):
         uid = request.GET.get('id')
         student = request.user.student
         try:
-            detail = ProgressDetail.objects.get(unique_id=uid)
+            detail = ProgressDetail.objects.get(unique_id=uid, grade=student.grade)
             progress = Progress.objects.get(detail=detail, student=student)
             response = {'msg': 'ok', 'title': detail.title, 'desc': detail.desc, 'start_time': detail.start_time,
-                        'end_time': detail.end_time, 'student_text': progress.student_text,
-                        'teacher_text': progress.teacher_text, 'student_id':student.user.username,
-                        'student_file': progress.student_file, 'progress_file': detail.file}
+                        'end_time': detail.end_time, 'student_text': progress.student_text, 'progress_file': detail.file,
+                        'student_id': student.user.username, 'student_file': progress.student_file}
             return JsonResponse(response, encoder=ComplexEncoder)
         except Exception as e:
             response = {'msg': str(e)}
@@ -311,7 +385,7 @@ class S_Progress_Detail(View):
         print(file)
         student = request.user.student
         try:
-            detail = ProgressDetail.objects.get(unique_id=uid)
+            detail = ProgressDetail.objects.get(unique_id=uid, grade=student.grade)
             now = timezone.now()
             print(now)
             if detail.start_time < now < detail.end_time:
@@ -329,6 +403,10 @@ class S_Progress_Detail(View):
                         f.write(chunk)
                 progress.student_file = filename
                 progress.save()
+                # 向老师发送邮件
+                print('send_mail teacher start')
+                send_mail("学生作业提交", teacher_desc(student.user.name, detail.title), EMAIL_ADDRESS, [student.user.email])
+                print('send_mail teacher end')
                 return HttpResponse('ok')
             else:
                 return HttpResponse('out of date')
@@ -346,16 +424,16 @@ class T_Choice(View):
     @staticmethod
     def get(request):
         teacher = request.user.teacher
-        choose_list = Choose.objects.filter(teacher=teacher, student_choice=2, teacher_choice=1)
+        choose_list = Choose.objects.filter(teacher=teacher, student_choice=2, teacher_choice=1).order_by('-grade')
         json_list = []
         for choose in choose_list:
             if choose.student.student_type == 'U':
                 json_item = {"student_id": choose.student.user.username, "name": choose.student.user.name,
-                             "type": '非留学生'}
+                             "type": '非留学生', "grade": choose.grade}
                 json_list.append(json_item)
             elif choose.student.student_type == 'F':
                 json_item = {"student_id": choose.student.user.username, "name": choose.student.user.name,
-                             "type": '留学生'}
+                             "type": '留学生', "grade": choose.grade}
                 json_list.append(json_item)
         print(json_list)
         return HttpResponse(json.dumps(json_list))
@@ -364,21 +442,24 @@ class T_Choice(View):
     def post(request):
         data = request.POST
         print(data)
+        grade = data.get('grade')
         student_id = data.get('student_id')
         choice = data.get('choice')
         teacher = request.user.teacher
         student = User.objects.get(username=student_id).student
+        if grade != student.grade:
+            return HttpResponse('学生毕业年级有误')
         if student.teacher is None:    # 该学生未选择导师
-            choose = Choose.objects.get(student=student, teacher=teacher)
+            choose = Choose.objects.get(student=student, teacher=teacher, grade=student.grade)
             if student.student_type == 'U':
-                count = teacher.student_set.filter(student_type='U').count()
+                count = teacher.student_set.filter(student_type='U', grade=student.grade).count()
                 max_count = teacher.max_student
                 if count >= max_count:
                     choose.teacher_choice = 3
                     choose.save()
                     return HttpResponse('U_max')
             elif student.student_type == 'F':
-                count = teacher.student_set.filter(student_type='F').count()
+                count = teacher.student_set.filter(student_type='F', grade=student.grade).count()
                 max_count = teacher.max_foreign
                 if count >= max_count:
                     choose.teacher_choice = 3
@@ -402,7 +483,7 @@ class T_Choice(View):
 @login_required
 def confirm_list_t(request):
     teacher = request.user.teacher
-    choose_list = Choose.objects.filter(teacher=teacher).exclude(teacher_choice=1)
+    choose_list = Choose.objects.filter(teacher=teacher).exclude(teacher_choice=1).order_by('-grade')
     json_list = []
     for choose in choose_list:
         teacher_choice = choose.teacher_choice
@@ -435,12 +516,10 @@ def t_progress_list_unfinished(request):
     detail_list = ProgressDetail.objects.filter(start_time__lt=now, end_time__gt=now)
     for detail in detail_list:
         progress_list = Progress.objects.filter(detail=detail, student_ok=False, teacher=teacher)
-        # length = progress_list.count()
-        # if length != 0:
         for progress in progress_list:
             json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                          'end_time': detail.end_time, 'msg': '未完成', 'student_id': progress.student.user.username,
-                         'student_name': progress.student.user.name}
+                         'student_name': progress.student.user.name, 'grade': detail.grade}
             res.append(json_item)
     detail_list = ProgressDetail.objects.filter(end_time__lt=now)
     for detail in detail_list:
@@ -448,8 +527,9 @@ def t_progress_list_unfinished(request):
         for progress in progress_list:
             json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                          'end_time': detail.end_time, 'msg': '超时未完成', 'student_id': progress.student.user.username,
-                         'student_name': progress.student.user.name}
+                         'student_name': progress.student.user.name, 'grade': detail.grade}
             res.append(json_item)
+    res.sort(key=lambda k: (-k['grade'], k['msg']))
     return HttpResponse(json.dumps(res, cls=ComplexEncoder))
 
 
@@ -473,9 +553,9 @@ def t_half(request):
         detail = progress.detail
         json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                      'end_time': detail.end_time, 'msg': '未回复', 'student_id': progress.student.user.username,
-                     'student_name': progress.student.user.name}
+                     'student_name': progress.student.user.name, 'grade': detail.grade}
         res.append(json_item)
-    res.sort(key=lambda k: k['start_time'])
+    res.sort(key=lambda k: (-k['grade'], k['start_time']))
     return HttpResponse(json.dumps(res, cls=ComplexEncoder))
 
 
@@ -500,16 +580,17 @@ def t_progress_list_finished(request):
         detail = progress.detail
         json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                      'end_time': detail.end_time, 'msg': '已完成', 'student_id': progress.student.user.username,
-                     'student_name': progress.student.user.name}
+                     'student_name': progress.student.user.name, 'grade': detail.grade}
         res.append(json_item)
-    res.sort(key=lambda k: k['start_time'])
+    res.sort(key=lambda k: (-k['grade'], k['start_time']))
     return HttpResponse(json.dumps(res, cls=ComplexEncoder))
-
 
 
 '''
 导师查看progress详情
 '''
+
+
 class T_Progress_Detail(View):
     @staticmethod
     def get(request):
@@ -518,11 +599,12 @@ class T_Progress_Detail(View):
         teacher = request.user.teacher
         try:
             student = User.objects.get(username=student_id).student
-            detail = ProgressDetail.objects.get(unique_id=uid)
+            detail = ProgressDetail.objects.get(unique_id=uid, grade=student.grade)
             progress = Progress.objects.get(detail=detail, teacher=teacher, student=student)
             response = {'msg': 'ok', 'title': detail.title, 'desc': detail.desc, 'start_time': detail.start_time,
                         'end_time': detail.end_time, 'student_name': student.user.name, 'student_text': progress.student_text,
-                        'teacher_text': progress.teacher_text, 'student_file': progress.student_file, 'progress_file': detail.file}
+                        'teacher_text': progress.teacher_text, 'student_file': progress.student_file,
+                        'progress_file': detail.file, 'status': progress.status}
             return JsonResponse(response, encoder=ComplexEncoder)
         except Exception as e:
             response = {'msg': str(e)}
@@ -534,13 +616,15 @@ class T_Progress_Detail(View):
         teacher_text = data.get('teacher_text')
         uid = data.get('id')
         student_id = data.get('student_id')
+        status = data.get('status')
         teacher = request.user.teacher
         try:
             student = User.objects.get(username=student_id).student
-            detail = ProgressDetail.objects.get(unique_id=uid)
+            detail = ProgressDetail.objects.get(unique_id=uid, grade=student.grade)
             progress = Progress.objects.get(detail=detail, teacher=teacher, student=student)
             progress.teacher_text = teacher_text
             progress.teacher_ok = True
+            progress.status = status
             progress.save()
             return HttpResponse('ok')
         except Exception as e:
@@ -558,16 +642,25 @@ class T_Progress_Detail(View):
 
 @login_required
 def student_list(request):
-    s_list = Student.objects.all()
+    assistant = request.user.assistant
+    s_list = Student.objects.filter(grade=assistant.grade).exclude(teacher=None)
     response = []
     for student in s_list:
-        json_item = {}
-        if student.teacher is None:
-            json_item = {'student_name': student.user.name, 'teacher_name': '未选择'}
-        else:
-            json_item = {'student_name': student.user.name, 'teacher_name': student.teacher.user.name}
+        json_item = {'student_name': student.user.name, 'teacher_name': student.teacher.user.name,
+                     'institute': student.teacher.institute}
         response.append(json_item)
-    response.sort(key=lambda k: k['teacher_name'])
+    response.sort(key=lambda k: (k['institute'], k['teacher_name']))
+    return HttpResponse(json.dumps(response))
+
+
+@login_required
+def student_list_not_selected(request):
+    assistant = request.user.assistant
+    s_list = Student.objects.filter(grade=assistant.grade, teacher=None)
+    response = []
+    for student in s_list:
+        json_item = {'student_name': student.user.name, 'teacher_name': '未选择'}
+        response.append(json_item)
     return HttpResponse(json.dumps(response))
 
 
@@ -578,6 +671,7 @@ def student_list(request):
 
 @login_required
 def create_progress(request):
+    assistant = request.user.assistant
     data = request.POST
     title = data.get('title')
     desc = data.get('desc')
@@ -587,7 +681,7 @@ def create_progress(request):
     print(title, desc, s_time, e_time)
     start_time = datetime(int(s_time[0]), int(s_time[1]), int(s_time[2]), int(s_time[3]), int(s_time[4]), int(s_time[5]))
     end_time = datetime(int(e_time[0]), int(e_time[1]), int(e_time[2]), int(e_time[3]), int(e_time[4]), int(e_time[5]))
-    student_list = Student.objects.all()
+    student_list = Student.objects.filter(grade=assistant.grade).exclude(teacher=None)
     length = ProgressDetail.objects.all().count() + 1
     email_list = []
     filename = ''
@@ -600,14 +694,14 @@ def create_progress(request):
                 for chunk in file.chunks():
                     print(chunk)
                     f.write(chunk)
-        progress = ProgressDetail.objects.create(unique_id=length, title=title, desc=desc,
+        progress = ProgressDetail.objects.create(unique_id=length, title=title, desc=desc, grade=assistant.grade,
                                                  start_time=start_time, end_time=end_time, file=filename)
 
         for student in student_list:
             Progress.objects.create(detail=progress, student=student, teacher=student.teacher)
             email_list.append(student.user.email)
         print('send email start')
-        send_mail(title, desc, 'zhangrt20@126.com', email_list, fail_silently=False)
+        send_mail(title, desc_detail(title, desc), EMAIL_ADDRESS, email_list, fail_silently=False)
         print('send email end')
         return HttpResponse('ok')
     except Exception as e:
@@ -622,7 +716,8 @@ def create_progress(request):
 
 @login_required
 def a_progress_list(request):
-    progress_list = ProgressDetail.objects.all().order_by('-start_time')
+    assistant = request.user.assistant
+    progress_list = ProgressDetail.objects.filter(grade=assistant.garde).order_by('-start_time')
     response = []
     for progress in progress_list:
         json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
@@ -638,49 +733,58 @@ def a_progress_list(request):
 
 @login_required
 def a_plist_student_list(request):
+    assistant = request.user.assistant
     uid = request.GET.get('id')
-    print(request.GET)
-    print(int(uid))
-    detail = ProgressDetail.objects.get(unique_id=int(uid))
-    progress_list = detail.progress_set.all()
-    finished = []
-    half = []
-    unfinished = []
-    for progress in progress_list:
-        if progress.student_ok:
-            if progress.teacher_ok:
-                json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
-                             'end_time': detail.end_time, 'student_name': progress.student.user.name,
-                             'student_id': progress.student.user.username, 'student_ok': '已完成',
-                             'teacher': progress.teacher.user.name, 'teacher_ok': '已完成'}
-                finished.append(json_item)
-            else:
-                if progress.teacher is None:
+    try:
+        detail = ProgressDetail.objects.get(unique_id=int(uid), grade=assistant.grade)
+        progress_list = detail.progress_set.all()
+        finished = []
+        half = []
+        unfinished = []
+        for progress in progress_list:
+            if progress.student_ok:
+                if progress.teacher_ok:
+                    status = ''
+                    if progress.status == 1:
+                        status = '超进度完成'
+                    elif progress.status == 2:
+                        status = '按时完成'
+                    elif progress.status == 3:
+                        status = '未达到预期'
                     json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                                  'end_time': detail.end_time, 'student_name': progress.student.user.name,
                                  'student_id': progress.student.user.username, 'student_ok': '已完成',
+                                 'teacher': progress.teacher.user.name, 'teacher_ok': status}
+                    finished.append(json_item)
+                else:
+                    if progress.teacher is None:
+                        json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
+                                     'end_time': detail.end_time, 'student_name': progress.student.user.name,
+                                     'student_id': progress.student.user.username, 'student_ok': '已完成',
+                                     'teacher': '未选择', 'teacher_ok': '空'}
+                        half.append(json_item)
+                    else:
+                        json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
+                                     'end_time': detail.end_time, 'student_name': progress.student.user.name,
+                                     'student_id': progress.student.user.username, 'student_ok': '已完成',
+                                     'teacher': progress.teacher.user.name, 'teacher_ok': '未批改'}
+                        half.append(json_item)
+            else:
+                if progress.teacher is None:
+                    json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time':detail.start_time,
+                                 'end_time': detail.end_time, 'student_name': progress.student.user.name,
+                                 'student_id': progress.student.user.username, 'student_ok': '未完成',
                                  'teacher': '未选择', 'teacher_ok': '空'}
-                    half.append(json_item)
+                    unfinished.append(json_item)
                 else:
                     json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                                  'end_time': detail.end_time, 'student_name': progress.student.user.name,
-                                 'student_id': progress.student.user.username, 'student_ok': '已完成',
-                                 'teacher': progress.teacher.user.name, 'teacher_ok': '未批改'}
-                    half.append(json_item)
-        else:
-            if progress.teacher is None:
-                json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time':detail.start_time,
-                             'end_time': detail.end_time, 'student_name': progress.student.user.name,
-                             'student_id': progress.student.user.username, 'student_ok': '未完成',
-                             'teacher': '未选择', 'teacher_ok': '空'}
-                unfinished.append(json_item)
-            else:
-                json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
-                             'end_time': detail.end_time, 'student_name': progress.student.user.name,
-                             'student_id': progress.student.user.username, 'student_ok': '未完成',
-                             'teacher': progress.teacher.user.name,  'teacher_ok': '未批改'}
-                unfinished.append(json_item)
-    return HttpResponse(json.dumps(finished + half + unfinished, cls=ComplexEncoder))
+                                 'student_id': progress.student.user.username, 'student_ok': '未完成',
+                                 'teacher': progress.teacher.user.name,  'teacher_ok': '未批改'}
+                    unfinished.append(json_item)
+        return HttpResponse(json.dumps(finished + half + unfinished, cls=ComplexEncoder))
+    except Exception as e:
+        return HttpResponse(str(e))
 
 
 '''
@@ -696,11 +800,20 @@ def progress_detail(request):
     student = User.objects.get(username=student_id).student
     print(student)
     try:
-        progress = ProgressDetail.objects.get(unique_id=uid)
+        progress = ProgressDetail.objects.get(unique_id=uid, grade=student.grade)
         detail = Progress.objects.get(detail=progress, student=student)
+        status = ''
+        if detail.status == 1:
+            status = '超进度完成'
+        elif detail.status == 2:
+            status = '按时完成'
+        elif detail.status == 3:
+            status = '未达到预期'
+        elif detail.status == 4:
+            status = '未批改'
         if detail.teacher is None:
             response = {'msg': 'ok', 'title': progress.title, 'desc': progress.desc, 'progress_file': progress.file,
-                        'student_name': student.user.name, 'student_text': detail.student_text,
+                        'student_name': student.user.name, 'student_text': detail.student_text, 'status': '',
                         'teacher_name': '未选择', 'teacher_text': '空', 'student_file': detail.student_file}
             print(response)
             return JsonResponse(response)
@@ -708,7 +821,7 @@ def progress_detail(request):
             response = {'msg': 'ok', 'title': progress.title, 'desc': progress.desc, 'progress_file': progress.file,
                         'student_name': student.user.name, 'student_text': detail.student_text,
                         'teacher_name': student.teacher.user.name, 'teacher_text': detail.teacher_text,
-                        'student_file': detail.student_file}
+                        'student_file': detail.student_file, 'status': status}
             print(response)
             return JsonResponse(response)
     except Exception as e:
@@ -716,6 +829,10 @@ def progress_detail(request):
         print(response)
         return JsonResponse(response)
 
+
+@login_required
+def send_email_teacher(request):
+    return 'ok'
 
 
 def mkdir(path):
@@ -828,6 +945,18 @@ def student_file_download(request):
         return response
     except Exception as e:
         return HttpResponse(str(e))
+
+
+@login_required
+def create_many_student(request):
+    wb = xlrd.open_workbook(filename=None, file_contents=request.FILES['file'].read())
+    table = wb.sheets()[0]
+    row = table.nrows
+    for i in range(1, row):
+        col = table.row_values(i)
+        print(col)
+        # https://www.mscto.com/python/178498.html
+        # https://blog.csdn.net/wangkai_123456/article/details/50457284
 
 
 
