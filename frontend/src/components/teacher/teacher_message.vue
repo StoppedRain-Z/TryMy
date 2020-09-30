@@ -44,7 +44,7 @@ export default {
     methods: {
         getData() {
             this.$http
-                .get('/teacher_center/T_detail/')
+                .get('/teacher_center/T_message/')
                 .then(result => {
                     this.detail_message = result.body
                     console.log(result.body)
