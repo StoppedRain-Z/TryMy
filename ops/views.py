@@ -477,6 +477,43 @@ class T_Choice(View):
             return HttpResponse('student has teacher')
 
 
+class T_Detail(View):
+    @staticmethod
+    def get(request):
+        user = request.user
+        teacher = user.teacher
+        if teacher is None:
+            response = {'msg': 'user not exist'}
+            return JsonResponse(response)
+        response = {'msg': 'ok', 'teacher_name': user.name, 'teacher_id': user.username, 'email': user.email,
+                    'mobile': user.mobile, 'institute': teacher.institute, 'teacher_info': teacher.teacher_info}
+        return JsonResponse(response)
+
+    @staticmethod
+    def post(request):
+        user = request.user
+        teacher = user.teacher
+        data = request.POST
+        email = data.get('email')
+        mobile = data.get('mobile')
+        info = data.get('teacher_info')
+        if not check_email(email):
+            return HttpResponse('邮箱格式错误')
+        if not check_mobile(mobile):
+            return HttpResponse('手机格式错误')
+        try:
+            user.email = email
+            user.mobile = mobile
+            user.save()
+            teacher.teacher_info = info
+            teacher.save()
+            return HttpResponse('ok')
+        except Exception as e:
+            print(str(e))
+            return HttpResponse(str(e))
+
+
+
 '''
 导师查看已确认过的志愿列表
 '''
@@ -861,58 +898,6 @@ def mkdir(path):
         print("创建成功"+path)
 
 
-'''
-def s_file_upload(request):
-    uid = request.POST.get('id')
-    file = request.FILES.get('userFile', None)
-    student = request.user.student
-    try:
-        detail = ProgressDetail.objects.get(unique_id=uid)
-        progress = Progress.objects.get(detail=detail, student=student)
-        filename = file.name
-        s_dir = 'templates/student_file/' + detail.unique_id + '_' + detail.title + '/' + student.user.username
-        mkdir(s_dir)
-        with open(s_dir + '/' + filename, 'wb+') as f:
-            for chunk in file.chunks():
-                f.write(chunk)
-        progress.student_file = filename
-        progress.save()
-        return HttpResponse('ok')
-    except Exception as e:
-        print(str(e))
-        return HttpResponse(str(e))
-
-
-def a_file_upload(request):
-    uid = request.POST.get('id')
-    file = request.FILES.get('userFile', None)
-    try:
-        detail = ProgressDetail.objects.get(unique_id=uid)
-        filename = file.name
-        s_dir = 'templates/progress_file/' + detail.unique_id + '_' + detail.title
-        mkdir(s_dir)
-        with open(s_dir + '/' + filename, 'wb+') as f:
-            for chunk in file.chunks():
-                f.write(chunk)
-        detail.file = filename
-        detail.save()
-        return HttpResponse('ok')
-    except Exception as e:
-        print(str(e))
-        return HttpResponse(str(e))
-'''
-
-
-'''def file_iterator(file_name, chunk_size=512):
-    with open(file_name, 'rb') as f:
-        while True:
-            c = f.read(chunk_size)
-            if c:
-                yield c
-            else:
-                break'''
-
-
 @login_required
 def progress_file_download(request):
 
@@ -967,14 +952,52 @@ def student_file_download(request):
 def create_many_student(request):
     assistant = request.user.assistant
     grade = assistant.grade
+    print(grade)
+    file = request.FILES.get('file', None)
+    print(file)
     wb = xlrd.open_workbook(filename=None, file_contents=request.FILES['file'].read())
     table = wb.sheets()[0]
+    print(table)
+
     row = table.nrows
+    res = []
     for i in range(1, row):
         col = table.row_values(i)
         print(col)
-        # https://www.mscto.com/python/178498.html
-        # https://blog.csdn.net/wangkai_123456/article/details/50457284
+        try:
+            id = str(int(col[0]))
+            name = str(col[1])
+            email = str(col[2])
+            mobile = str(int(col[3]))
+            type = col[4]
+            if check_email(email) and check_mobile(mobile) and (type == 'U' or type == 'F'):
+                user = User.objects.create(username=id, password=id,
+                                           name=name,
+                                           email=email,
+                                           mobile=mobile)
+                Student.objects.create(user=user, student_type=type, grade=grade)
+                data = '留学生'
+                if type == 'U':
+                    data = '非留学生'
+                res.append({'id': id, 'name': name, 'email': email, 'mobile': mobile, 'type': data})
+        except Exception as e:
+            return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res))
+
+
+@login_required
+def change_password(request):
+    user = request.user
+    old_pwd = request.POST.get('old_pwd')
+    new_pwd = request.POST.get('new_pwd')
+    if not all([old_pwd, new_pwd]):
+        return HttpResponse('缺少参数')
+    if old_pwd == user.password:
+        user.password = new_pwd
+        user.save()
+        return HttpResponse('ok')
+    else:
+        return HttpResponse('密码错误')
 
 
 
