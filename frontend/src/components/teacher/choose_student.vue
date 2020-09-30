@@ -47,6 +47,9 @@ export default {
       }, {
         dataItem: 'type',
         dataName: '学生身份'
+      }, {
+        dataItem: 'grade',
+        dataName: '毕业年份'
       }]
     }
   },
@@ -63,7 +66,8 @@ export default {
       console.log(row)
       var array = {
         'student_id': row.student_id,
-        'choice': 2
+        'choice': 2,
+        'grade': row.grade
       }
       console.log(array)
       this.radio = array
@@ -99,7 +103,7 @@ export default {
             alert('已拒绝')
           } else {
             alert('请重新选择')
-            //this.getData()
+            this.getData()
           }
         })
     }

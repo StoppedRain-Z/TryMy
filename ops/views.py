@@ -105,8 +105,8 @@ class S_Choice(View):
                          "teacher_id": teacher.user.username,
                          "student_count": str(u_count) + '/' + str(teacher.max_student),
                          "foreign_count": str(f_count) + '/' + str(teacher.max_foreign),
-                         "teacher_mobile": teacher.user.mobile,
-                         "teacher_email": teacher.user.email}
+                         "mobile": teacher.user.mobile,
+                         "email": teacher.user.email}
 
             json_list.append(json_item)
         print(json_list)
@@ -394,18 +394,19 @@ class S_Progress_Detail(View):
                     return HttpResponse('老师已批改，不可再次提交')
                 progress.student_text = student_text
                 progress.student_ok = True
-                filename = file.name
-                s_dir = 'templates/student_file/' + str(detail.unique_id) + '_' + detail.title + '/' + student.user.username
-                mkdir(s_dir)
-                with open(s_dir + '/' + filename, 'wb') as f:
-                    for chunk in file.chunks():
-                        print(chunk)
-                        f.write(chunk)
-                progress.student_file = filename
+                if file is not None:
+                    filename = file.name
+                    s_dir = 'templates/student_file/' + str(detail.unique_id) + '_' + detail.title + '/' + student.user.username
+                    mkdir(s_dir)
+                    with open(s_dir + '/' + filename, 'wb') as f:
+                        for chunk in file.chunks():
+                            print(chunk)
+                            f.write(chunk)
+                    progress.student_file = filename
                 progress.save()
                 # 向老师发送邮件
                 print('send_mail teacher start')
-                send_mail("学生作业提交", teacher_desc(student.user.name, detail.title), EMAIL_ADDRESS, [student.user.email], fail_silently=False)
+                send_mail("学生作业提交", teacher_desc(student.user.name, detail.title), EMAIL_ADDRESS, [progress.teacher.user.email], fail_silently=False)
                 print('send_mail teacher end')
                 return HttpResponse('ok')
             else:
@@ -442,11 +443,12 @@ class T_Choice(View):
     def post(request):
         data = request.POST
         print(data)
-        grade = data.get('grade')
+        grade = int(data.get('grade'))
         student_id = data.get('student_id')
         choice = data.get('choice')
         teacher = request.user.teacher
         student = User.objects.get(username=student_id).student
+        print(student.grade, grade)
         if grade != student.grade:
             return HttpResponse('学生毕业年级有误')
         if student.teacher is None:    # 该学生未选择导师
@@ -463,7 +465,7 @@ class T_Choice(View):
                 max_count = teacher.max_foreign
                 if count >= max_count:
                     choose.teacher_choice = 3
-                    choose.save
+                    choose.save()
                     return HttpResponse('F_max')
             choose.teacher_choice = choice
             choose.save()
