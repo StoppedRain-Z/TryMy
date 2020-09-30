@@ -20,14 +20,15 @@ urlpatterns = [
     path('teacher_center/T_half/', t_half),
     path('teacher_center/T_unfinished/', t_progress_list_unfinished),
     path('teacher_center/T_detail/', login_required(T_Progress_Detail.as_view())),
-    path('assistant_center/teacher_to_student/', student_list),
+    path('assistant_center/teacher_to_student_selected/', student_list),
+    path('assistant_center/teacher_to_student_unselected/', student_list_not_selected),
     path('assistant_center/create_progress/', create_progress),
     path('assistant_center/check_progress/', a_progress_list),
     path('assistant_center/progress_student/', a_plist_student_list),
     path('assistant_center/progress_student_detail/', progress_detail),
     path('student_detail/', student_detail),   # 学生个人信息，导师和辅导员查看
-    # path('s_file_upload/', s_file_upload),
     path('student_file_download/', student_file_download),
-    # path('a_file_upload/', a_file_upload),
     path('progress_file_download/', progress_file_download),
+    path('send_mail_teacher/', send_email_teacher),
+    path('create_many_student/', create_many_student)
 ]

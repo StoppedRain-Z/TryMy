@@ -20,7 +20,7 @@ class User(AbstractUser):
 
 
 class Teacher(models.Model):
-    user = models.OneToOneField(User,on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     institute = models.CharField(max_length=128, default='')
     teacher_info = models.URLField(verbose_name="个人主页", max_length=128, default='')
     max_student = models.IntegerField(default=2)
@@ -35,7 +35,9 @@ class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.DO_NOTHING, null=True, blank=True)
     student_type = models.CharField(max_length=1, choices=STUDENT_TYPE, default='U')
+    grade = models.IntegerField(default=2020)
 
 
 class Assistant(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    grade = models.IntegerField(default=2020)

@@ -5,6 +5,19 @@ from django.contrib.auth import login, authenticate, logout
 from .models import *
 from django.views import View
 from django.http import JsonResponse, HttpResponse
+import re
+
+
+def check_email(email):
+    pattern = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+    print('check_email' + str(pattern.match(email)))
+    return pattern.match(email)
+
+
+def check_mobile(mobile):
+    pattern = re.compile(r"^1[35678]\d{9}$")
+    print('check_mobile' + str(pattern.match(mobile)))
+    return pattern.match(mobile)
 
 
 class RegisterView(View):
@@ -31,21 +44,38 @@ class RegisterView(View):
         if not all([cardID, name, password, email, mobile]):
             response['msg'] = "缺少注册信息"
             return JsonResponse(response)
+        if not check_email(email):
+            response['msg'] = '邮箱格式错误'
+            return JsonResponse(response)
+        if not check_mobile(mobile):
+            response['msg'] = '手机格式错误'
+            return JsonResponse(response)
         try:
             user = User.objects.create_user(user_type=user_type, username=cardID, name=name, password=password,
                                             email=email, mobile=mobile)
             if user_type == 'S':
                 print('create student')
                 student_type = data.get('student_type')
-                Student.objects.create(user=user, student_type=student_type)
+                grade = data.get('grade')
+                if not all([student_type, grade]):
+                    response['msg'] = "缺少注册信息"
+                    return JsonResponse(response)
+                Student.objects.create(user=user, student_type=student_type, grade=grade)
             elif user_type == 'T':
                 print('create teacher')
                 teacher_info = data.get('teacher_info')
                 institute = data.get('institute')
+                if not all([teacher_info, institute]):
+                    response['msg'] = "缺少注册信息"
+                    return JsonResponse(response)
                 Teacher.objects.create(user=user, teacher_info=teacher_info, institute=institute)
             elif user_type == 'A':
                 print('create assistant')
-                Assistant.objects.create(user=user)
+                grade = data.get('grade')
+                if not all([grade]):
+                    response['msg'] = "缺少注册信息"
+                    return JsonResponse(response)
+                Assistant.objects.create(user=user, grade=grade)
             response['msg'] = 'ok'
             return JsonResponse(response)
         except Exception as e:
