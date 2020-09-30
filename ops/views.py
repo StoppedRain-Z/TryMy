@@ -963,6 +963,8 @@ def student_file_download(request):
 
 @login_required
 def create_many_student(request):
+    assistant = request.user.assistant
+    grade = assistant.grade
     wb = xlrd.open_workbook(filename=None, file_contents=request.FILES['file'].read())
     table = wb.sheets()[0]
     row = table.nrows

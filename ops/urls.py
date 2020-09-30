@@ -30,4 +30,5 @@ urlpatterns = [
     path('student_file_download/', student_file_download),
     path('progress_file_download/', progress_file_download),
     path('send_mail_teacher/', send_email_teacher),
+    path('create_many_student/', create_many_student)
 ]
