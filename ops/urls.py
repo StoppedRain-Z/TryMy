@@ -14,6 +14,7 @@ urlpatterns = [
     path('student_center/S_unfinished/', s_progress_list_unfinished),  # 学生未完成progress列表
     path('student_center/S_P_detail/', login_required(S_Progress_Detail.as_view())),  # 学生Progress详情，post可修改
     path('student_center/S_detail/', login_required(S_Detail.as_view())),   # 学生个人信息，学生个人查看修改
+    path('/teacher_center/T_detail/',login_required(T_Detail.as_view())),
     path('teacher_center/choose_student/', login_required(T_Choice.as_view())),
     path('teacher_center/choose_queue/', confirm_list_t),
     path('teacher_center/T_finished/', t_progress_list_finished),
@@ -30,5 +31,6 @@ urlpatterns = [
     path('student_file_download/', student_file_download),
     path('progress_file_download/', progress_file_download),
     path('send_mail_teacher/', send_email_teacher),
-    path('create_many_student/', create_many_student)
+    path('assistant_center/create_many_student/', create_many_student),
+    path('change_password/', change_password)
 ]
