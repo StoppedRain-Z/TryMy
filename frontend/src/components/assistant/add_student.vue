@@ -88,9 +88,8 @@ export default {
         commit() {
             var formData = new window.FormData();
             formData.append('file',this.formData.file)
-            console.log(array)
             this.$http
-                .post('assistant_center/create_many_student/', array, {
+                .post('assistant_center/create_many_student/', formData, {
                     headers:{
                         'Contene-Type': 'multipart/form-data'
                     }
