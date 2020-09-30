@@ -4,6 +4,7 @@ import index from './components/Index'
 import register from './components/register'
 import login from './components/login'
 import center from './components/center'
+import changepwd from './components/changepwd'
 import center_S from './components/student/center_S'
 import center_A from './components/assistant/center_A'
 import center_T from './components/teacher/center_T'
@@ -21,6 +22,7 @@ import T_unfinished from './components/teacher/T_unfinished'
 import T_unfinished_detail from './components/teacher/T_unfinished_detail'
 import T_finished from './components/teacher/T_finished'
 import T_finished_detail from './components/teacher/T_finished_detail'
+import teacher_message from './components/teacher/teacher_message'
 import assistant_center from './components/assistant/assistant_center'
 import create_progress from './components/assistant/create_progress'
 import check_progress from './components/assistant/check_progress'
@@ -57,7 +59,8 @@ var router = new VueRouter({
         {path: '/S_finish_detail', component: S_finish_detail, meta: {login: true}},
         {path: '/S_unfinish_detail', component: S_unfinish_detail, meta: {login: true}},
         {path: '/S_half_detail', component: S_half_detail, meta: {login: true}},
-        {path: '/student_message', component: student_message, meta: {login: true}}
+        {path: '/student_message', component: student_message, meta: {login: true}},
+        {path: '/changePWD_S', component: changepwd, meta: {login: true}}
       ]
     },
     {
@@ -73,7 +76,9 @@ var router = new VueRouter({
         {path: '/T_half', component: T_half, meta: {login: true}},
         {path: '/T_half_detail', component: T_half_detail, meta: {login: true}},
         {path: '/T_finished_detail', component: T_finished_detail, meta: {login: true}},
-        {path: '/T_unfinished_detail', component: T_unfinished_detail, meta: {login: true}}
+        {path: '/T_unfinished_detail', component: T_unfinished_detail, meta: {login: true}},
+        {path: '/teacher_message', component: teacher_message, meta: {login: true}},
+        {path: '/changePWD_T', component: changepwd, meta: {login: true}}
       ]
     },
     {

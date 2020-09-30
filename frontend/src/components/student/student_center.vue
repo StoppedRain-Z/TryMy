@@ -17,6 +17,7 @@
           <el-submenu index="3">
             <template slot="title"><i class="el-icon-menu"></i>我的</template>
             <el-menu-item index="student_message">我的信息</el-menu-item>
+            <el-menu-item index="changePWD_S">修改密码</el-menu-item>
           </el-submenu>
         </el-menu>
       </el-aside>
