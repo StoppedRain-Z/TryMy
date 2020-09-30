@@ -109,6 +109,13 @@ export default {
                 })
         },
         getFile(event) {
+            var file = event.target.files[0]
+            var index = file.name.lastIndexOf(".")
+            var type = file.name.substr(index+1)
+            if(type !== "doc" && type !== "docx" && type !== "pdf"){
+                alert("不支持该文件类型")
+                return 
+            }
             this.detail_message.file = event.target.files[0]
         },
         download_progress_file () {

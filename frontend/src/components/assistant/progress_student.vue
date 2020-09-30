@@ -122,8 +122,8 @@ export default {
     send_to_teacher(row){
       var array = {
         'teacher_id': row.teacher_id,
-        'progress_id': this.id,
-        'student_id': row.student_id
+        'student_name': row.student_name,
+        'title': row.title
       }
       console.log(array)
       this.$http
@@ -139,7 +139,7 @@ export default {
     }
   },
   created () {
-    //this.getData()
+    this.getData()
   }
 }
 </script>

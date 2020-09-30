@@ -11,6 +11,7 @@
           </el-form-item>
           <el-form-item label="相关说明">
             <input style="width: 260px" type="file" @change="getFile($event)"></input>
+            <span>仅支持扩展名为.doc .docx .pdf的文件</span>
           </el-form-item>
           <el-form-item label="开始时间" required>
             <el-col :span="11">
@@ -55,6 +56,7 @@ export default {
         'desc': '',
         'start_time' : '',
         'end_time': '',
+        'file': ''
       },
       rules: {
         title: [{required: true, message: '请输入进度名称', trigger: 'blur'}],
@@ -109,12 +111,22 @@ export default {
       this.reload()
     },
     getFile(event) {
+        var file = event.target.files[0]
+        console.log(event.target.files)
+        console.log(file.type)
+        var index = file.name.lastIndexOf(".")
+        var type = file.name.substr(index+1)
+        if(type !== "doc" && type !== "docx" && type !== "pdf"){
+          
+          alert("不支持该文件类型")
+          return 
+        }
         this.formData.file = event.target.files[0]
         console.log(this.formData.file)
-    },
-    created() {
-      console.log(this.formData.file)
     }
+  },
+  created() {
+    console.log(this.formData.file)
   }
 }
 </script>

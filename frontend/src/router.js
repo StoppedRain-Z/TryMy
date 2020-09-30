@@ -34,6 +34,7 @@ import T_half from './components/teacher/T_half'
 import T_half_detail from './components/teacher/T_half_detail'
 import T_S_selected from './components/assistant/T_S_selected'
 import T_S_unselected from './components/assistant/T_S_unselected'
+import add_student from './components/assistant/add_student'
 
 import store from './store'
 
@@ -87,7 +88,8 @@ var router = new VueRouter({
         {path: '/progress_student', component: progress_student, meta: {login: true}},
         {path: '/progress_student_detail', component: progress_student_detail, meta: {login: true}},
         {path: '/T_S_selected', component: T_S_selected, meta: {login: true}},
-        {path: '/T_S_unselected', component: T_S_unselected, meta: {login: true}}
+        {path: '/T_S_unselected', component: T_S_unselected, meta: {login: true}},
+        {path: '/add_student', component: add_student, meta: {login: true}}
       ]
     }
   ]
