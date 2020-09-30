@@ -10,7 +10,8 @@
             <el-input type="textarea" v-model="formData.desc"></el-input>
           </el-form-item>
           <el-form-item label="相关说明">
-            <input style="width: 260px" type="file" @change="getFile($event)"></input>
+            <input style="width: 260px" type="file" id="uploadfile" 
+              ref= "pathClear" @change="getFile($event)"></input>
             <span>仅支持扩展名为.doc .docx .pdf的文件</span>
           </el-form-item>
           <el-form-item label="开始时间" required>
@@ -117,7 +118,10 @@ export default {
         var index = file.name.lastIndexOf(".")
         var type = file.name.substr(index+1)
         if(type !== "doc" && type !== "docx" && type !== "pdf"){
-          
+          this.$refs.pathClear.value = ''
+          //var obj = document.getElementById('uploadfile')
+          //obj.select();
+          //document.selection.clear();
           alert("不支持该文件类型")
           return 
         }

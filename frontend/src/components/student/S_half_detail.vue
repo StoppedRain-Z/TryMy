@@ -20,7 +20,8 @@
             </el-form-item>
             <el-form-item label="上传文件">
               <div>{{detail_message.student_file}}</div>
-              <input style="width: 260px" type="file" @change="getFile($event)" v-show="changeshow"></input>
+              <input style="width: 260px" type="file" 
+                ref= "pathClear" @change="getFile($event)" v-show="changeshow"></input>
               <el-button type="primary" @click="download_student_file" v-show="student_show">下载文件</el-button>
             </el-form-item>
 
@@ -113,6 +114,7 @@ export default {
             var index = file.name.lastIndexOf(".")
             var type = file.name.substr(index+1)
             if(type !== "doc" && type !== "docx" && type !== "pdf"){
+                this.$refs.pathClear.value = ''
                 alert("不支持该文件类型")
                 return 
             }

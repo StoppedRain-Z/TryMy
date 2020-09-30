@@ -18,7 +18,8 @@
             </el-form-item>
 
             <el-form-item label="上传文件">
-                <input style="width: 260px" type="file" @change="getFile($event)"></input>
+                <input style="width: 260px" type="file" 
+                  ref= "pathClear" @change="getFile($event)"></input>
             </el-form-item>
 
         </el-form>
@@ -96,6 +97,7 @@ export default {
       var index = file.name.lastIndexOf(".")
       var type = file.name.substr(index+1)
       if(type !== "doc" && type !== "docx" && type !== "pdf"){
+          this.$refs.pathClear.value = ''
           alert("不支持该文件类型")
           return 
       }
