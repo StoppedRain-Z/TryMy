@@ -4,6 +4,9 @@ import index from './components/Index'
 import register from './components/register'
 import login from './components/login'
 import center from './components/center'
+import center_S from './components/student/center_S'
+import center_A from './components/assistant/center_A'
+import center_T from './components/teacher/center_T'
 import student_center from './components/student/student_center'
 import choose_teacher from './components/student/choose_teacher'
 import choose_queue_S from './components/student/choose_queue'
@@ -44,7 +47,7 @@ var router = new VueRouter({
       component: student_center,
       meta: {login: true},
       children: [
-        {path: '', component: center, meta: {login: true}},
+        {path: '', component: center_S, meta: {login: true}},
         {path: '/choose_teacher', component: choose_teacher, meta: {login: true}},
         {path: '/choose_queue_S', component: choose_queue_S, meta: {login: true}},
         {path: '/S_unfinished', component: S_unfinished, meta: {login: true}},
@@ -61,7 +64,7 @@ var router = new VueRouter({
       component: teacher_center,
       meta: {login: true},
       children: [
-        {path: '', component: center, meta: {login: true}},
+        {path: '', component: center_T, meta: {login: true}},
         {path: '/choose_student', component: choose_student, meta: {login: true}},
         {path: '/choose_queue_T', component: choose_queue_T, meta: {login: true}},
         {path: '/T_unfinished', component: T_unfinished, meta: {login: true}},
@@ -77,7 +80,7 @@ var router = new VueRouter({
       component: assistant_center,
       meta: {login: true},
       children: [
-        {path: '', component: center, meta: {login: true}},
+        {path: '', component: center_A, meta: {login: true}},
         {path: '/create_progress', component: create_progress, meta: {login: true}},
         {path: '/check_progress', component: check_progress, meta: {login: true}},
         {path: '/teacher_to_student', component: teacher_to_student, meta: {login: true}},

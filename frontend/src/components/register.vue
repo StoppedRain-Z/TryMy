@@ -34,10 +34,22 @@
       <el-form-item label="个人主页" v-show="showT">
         <el-input v-model="registerData.teacher_info"></el-input>
       </el-form-item>
-      <el-form-item label="身份" prop="student_type" v-show="showS">
+      <el-form-item label="身份选择" prop="student_type" v-show="showS">
         <el-select v-model="registerData.student_type">
           <el-option key="非留学生" label="非留学生" value="U"></el-option>
           <el-option key="留学生" label="留学生" value="F"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="毕业年份" v-show="showS">
+        <el-select v-model="registerData.grade" value-key="label" placeholder="请选择">
+          <el-option v-for="item in options" :label="item.label" :key="item.label" :value="item.label">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="辅导的学生的毕业年份" v-show="showA">
+        <el-select v-model="registerData.grade" value-key="label" placeholder="请选择">
+          <el-option v-for="item in options" :label="item.label" :key="item.label" :value="item.label">
+          </el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -51,7 +63,9 @@
 </template>
 
 <script>
+import DateSelect from './DateSelect'
 export default {
+  components: {DateSelect},
   data(){
     return {
       registerData: {
@@ -62,9 +76,11 @@ export default {
         mobile: '',
         teacher_info: '',
         institute: '',
-        student_type: ''
+        student_type: '',
+        grade: ''
       },
-      showA: true,
+      options: [],
+      showA: false,
       showT: false,
       showS: true
     }
@@ -106,7 +122,17 @@ export default {
           this.showT = false
           this.showS = true
       }
+    },
+    yearSelect() {
+      var myDate = new Date;
+      var year = myDate.getFullYear();
+      for(var i = 0; i < 3; i++){
+        this.options.push({label: year+i})
+      }
     }
+  },
+  created () {
+    this.yearSelect()
   }
 }
 </script>
