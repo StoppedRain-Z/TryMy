@@ -405,7 +405,7 @@ class S_Progress_Detail(View):
                 progress.save()
                 # 向老师发送邮件
                 print('send_mail teacher start')
-                send_mail("学生作业提交", teacher_desc(student.user.name, detail.title), EMAIL_ADDRESS, [student.user.email])
+                send_mail("学生作业提交", teacher_desc(student.user.name, detail.title), EMAIL_ADDRESS, [student.user.email], fail_silently=False)
                 print('send_mail teacher end')
                 return HttpResponse('ok')
             else:
@@ -754,33 +754,38 @@ def a_plist_student_list(request):
                     json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                                  'end_time': detail.end_time, 'student_name': progress.student.user.name,
                                  'student_id': progress.student.user.username, 'student_ok': '已完成',
-                                 'teacher': progress.teacher.user.name, 'teacher_ok': status}
+                                 'teacher': progress.teacher.user.name, 'teacher_ok': status,
+                                 'teacher_id': progress.teacher.user.username}
                     finished.append(json_item)
                 else:
                     if progress.teacher is None:
                         json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                                      'end_time': detail.end_time, 'student_name': progress.student.user.name,
                                      'student_id': progress.student.user.username, 'student_ok': '已完成',
-                                     'teacher': '未选择', 'teacher_ok': '空'}
+                                     'teacher': '未选择', 'teacher_ok': '空',
+                                     'teacher_id': progress.teacher.user.username}
                         half.append(json_item)
                     else:
                         json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                                      'end_time': detail.end_time, 'student_name': progress.student.user.name,
                                      'student_id': progress.student.user.username, 'student_ok': '已完成',
-                                     'teacher': progress.teacher.user.name, 'teacher_ok': '未批改'}
+                                     'teacher': progress.teacher.user.name, 'teacher_ok': '未批改',
+                                     'teacher_id': progress.teacher.user.username}
                         half.append(json_item)
             else:
                 if progress.teacher is None:
                     json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time':detail.start_time,
                                  'end_time': detail.end_time, 'student_name': progress.student.user.name,
                                  'student_id': progress.student.user.username, 'student_ok': '未完成',
-                                 'teacher': '未选择', 'teacher_ok': '空'}
+                                 'teacher': '未选择', 'teacher_ok': '空',
+                                 'teacher_id': progress.teacher.user.username}
                     unfinished.append(json_item)
                 else:
                     json_item = {'id': detail.unique_id, 'title': detail.title, 'start_time': detail.start_time,
                                  'end_time': detail.end_time, 'student_name': progress.student.user.name,
                                  'student_id': progress.student.user.username, 'student_ok': '未完成',
-                                 'teacher': progress.teacher.user.name,  'teacher_ok': '未批改'}
+                                 'teacher': progress.teacher.user.name,  'teacher_ok': '未批改',
+                                 'teacher_id': progress.teacher.user.username}
                     unfinished.append(json_item)
         return HttpResponse(json.dumps(finished + half + unfinished, cls=ComplexEncoder))
     except Exception as e:
@@ -832,6 +837,15 @@ def progress_detail(request):
 
 @login_required
 def send_email_teacher(request):
+    teacher_id = request.POST.get('teacher_id')
+    student_name = request.POST.get('student_name')
+    title = request.POST.get('title')
+    try:
+        teacher = User.objects.get(username=teacher_id).teacher
+        send_mail('请及时批改毕设进度',teacher_desc(student_name, title), EMAIL_ADDRESS, [teacher.user.email], fail_silently=False)
+        return HttpResponse('ok')
+    except Exception as e:
+        return HttpResponse(str(e))
     return 'ok'
 
 
