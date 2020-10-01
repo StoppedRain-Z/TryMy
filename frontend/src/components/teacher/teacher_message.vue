@@ -74,7 +74,7 @@ export default {
             }
             console.log(array)
             this.$http
-                .post('/teacher_center/T_detail/', array)
+                .post('/teacher_center/T_message/', array)
                 .then(result => {
                     if(result.body === 'ok'){
                         this.unchangeshow = true
