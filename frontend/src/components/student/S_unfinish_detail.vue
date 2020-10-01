@@ -117,7 +117,7 @@ export default {
         let blob = new Blob([res.data], {type: 'application/octet-stream'})
         console.log('//////////////////')
         if (window.navigator.msSaveOrOpenBlob) {
-          navigator.msSaveBlob(blob, this.progress_file)
+          navigator.msSaveBlob(blob, this.detail_message.progress_file)
         } else {
           let aTag = document.createElement('a')
           aTag.download = this.student_file

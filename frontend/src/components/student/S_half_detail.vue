@@ -130,10 +130,10 @@ export default {
             console.log(result.data)
             const blob = new Blob([result.body])
             if (window.navigator.msSaveOrOpenBlob) {
-                navigator.msSaveBlob(blob, this.progress_file)
+                navigator.msSaveBlob(blob, this.detail_message.progress_file)
             } else {
                 let aTag = document.createElement('a')
-                aTag.download = this.progress_file
+                aTag.download = this.detail_message.progress_file
                 aTag.href = URL.createObjectURL(blob)
                 aTag.click()
                 URL.revokeObjectURL(aTag.href)
@@ -151,10 +151,10 @@ export default {
             console.log(result.data)
             const blob = new Blob([result.body])
             if (window.navigator.msSaveOrOpenBlob) {
-                navigator.msSaveBlob(blob, this.student_file)
+                navigator.msSaveBlob(blob, this.detail_message.student_file)
             } else {
                 let aTag = document.createElement('a')
-                aTag.download = this.student_file
+                aTag.download = this.detail_message.student_file
                 aTag.href = URL.createObjectURL(blob)
                 aTag.click()
                 URL.revokeObjectURL(aTag.href)

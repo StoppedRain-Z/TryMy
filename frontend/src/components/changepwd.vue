@@ -39,6 +39,7 @@ export default {
                     if(result.body === 'ok'){
                         alert("密码修改完成")
                         this.detail_message = {}
+                        this.$router.push({path:'/login'})
                     }else{
                         alert(result.body)
                     }
