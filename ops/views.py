@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, reverse
 from django.views import View
 from django.contrib.auth.hashers import make_password
 from .models import *
+from django.contrib.auth import login, authenticate, logout
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse, FileResponse
 import json
 from datetime import datetime, tzinfo, timedelta, date
@@ -641,10 +642,19 @@ class T_Progress_Detail(View):
             student = User.objects.get(username=student_id).student
             detail = ProgressDetail.objects.get(unique_id=uid, grade=student.grade)
             progress = Progress.objects.get(detail=detail, teacher=teacher, student=student)
+            status = ''
+            if progress.status == 1:
+                status = '超进度完成'
+            elif progress.status == 2:
+                status = '按时完成'
+            elif progress.status == 3:
+                status = '未达到预期'
+            elif progress.status == 4:
+                status = '未批改'
             response = {'msg': 'ok', 'title': detail.title, 'desc': detail.desc, 'start_time': detail.start_time,
                         'end_time': detail.end_time, 'student_name': student.user.name, 'student_text': progress.student_text,
                         'teacher_text': progress.teacher_text, 'student_file': progress.student_file,
-                        'progress_file': detail.file, 'status': progress.status}
+                        'progress_file': detail.file, 'status': status}
             return JsonResponse(response, encoder=ComplexEncoder)
         except Exception as e:
             response = {'msg': str(e)}
@@ -994,11 +1004,10 @@ def change_password(request):
     new_pwd = request.POST.get('new_pwd')
     if not all([old_pwd, new_pwd]):
         return HttpResponse('缺少参数')
-    old_pwd = make_password(old_pwd)
     print(old_pwd)
     print(user.password)
-    if old_pwd == user.password:
-        user.password = new_pwd
+    if authenticate(username=user.username, password=old_pwd) is not None:
+        user.set_password(new_pwd)
         user.save()
         return HttpResponse('ok')
     else:
