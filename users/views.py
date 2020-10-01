@@ -93,8 +93,8 @@ class LoginView(View):
     def post(request):
         response = {}
         data = request.POST
-        cardID = data.get('cardID')
-        password = data.get('password')
+        cardID = (data.get('cardID'))
+        password = str(data.get('password'))
         print(cardID, password)
         if not all([cardID, password]):
             response['msg'] = '缺少请求参数'

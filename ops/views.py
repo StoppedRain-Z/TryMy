@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, reverse
 from django.views import View
+from django.contrib.auth.hashers import make_password
 from .models import *
+from django.contrib.auth import login, authenticate, logout
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse, FileResponse
 import json
 from datetime import datetime, tzinfo, timedelta, date
@@ -640,10 +642,19 @@ class T_Progress_Detail(View):
             student = User.objects.get(username=student_id).student
             detail = ProgressDetail.objects.get(unique_id=uid, grade=student.grade)
             progress = Progress.objects.get(detail=detail, teacher=teacher, student=student)
+            status = ''
+            if progress.status == 1:
+                status = '超进度完成'
+            elif progress.status == 2:
+                status = '按时完成'
+            elif progress.status == 3:
+                status = '未达到预期'
+            elif progress.status == 4:
+                status = '未批改'
             response = {'msg': 'ok', 'title': detail.title, 'desc': detail.desc, 'start_time': detail.start_time,
                         'end_time': detail.end_time, 'student_name': student.user.name, 'student_text': progress.student_text,
                         'teacher_text': progress.teacher_text, 'student_file': progress.student_file,
-                        'progress_file': detail.file, 'status': progress.status}
+                        'progress_file': detail.file, 'status': status}
             return JsonResponse(response, encoder=ComplexEncoder)
         except Exception as e:
             response = {'msg': str(e)}
@@ -756,7 +767,7 @@ def create_progress(request):
 @login_required
 def a_progress_list(request):
     assistant = request.user.assistant
-    progress_list = ProgressDetail.objects.filter(grade=assistant.garde).order_by('-start_time')
+    progress_list = ProgressDetail.objects.filter(grade=assistant.grade).order_by('-start_time')
     response = []
     for progress in progress_list:
         json_item = {'id': progress.unique_id, 'title': progress.title, 'start_time': progress.start_time,
@@ -908,6 +919,7 @@ def progress_file_download(request):
             size = 1024
             with open(path, "rb")as f:
                 for data in iter(lambda: f.read(size), b''):
+                    print(data)
                     yield data
         detail = ProgressDetail.objects.get(unique_id=uid)
         s_dir = 'templates/progress_file/' + str(detail.unique_id) + '_' + detail.title
@@ -971,7 +983,7 @@ def create_many_student(request):
             mobile = str(int(col[3]))
             type = col[4]
             if check_email(email) and check_mobile(mobile) and (type == 'U' or type == 'F'):
-                user = User.objects.create(username=id, password=id,
+                user = User.objects.create_user(user_type='S',username=id, password=id,
                                            name=name,
                                            email=email,
                                            mobile=mobile)
@@ -992,12 +1004,44 @@ def change_password(request):
     new_pwd = request.POST.get('new_pwd')
     if not all([old_pwd, new_pwd]):
         return HttpResponse('缺少参数')
-    if old_pwd == user.password:
-        user.password = new_pwd
+    print(old_pwd)
+    print(user.password)
+    if authenticate(username=user.username, password=old_pwd) is not None:
+        user.set_password(new_pwd)
         user.save()
         return HttpResponse('ok')
     else:
         return HttpResponse('密码错误')
+
+
+@login_required
+def create_many_teacher(request):
+    file = request.FILES.get('file', None)
+    print(file)
+    wb = xlrd.open_workbook(filename=None, file_contents=request.FILES['file'].read())
+    table = wb.sheets()[0]
+    print(table)
+
+    row = table.nrows
+    res = []
+    for i in range(1, row):
+        col = table.row_values(i)
+        print(col)
+        try:
+            id = str(int(col[0]))
+            name = str(col[1])
+            email = str(col[2])
+            mobile = str(int(col[3]))
+            institute = str(col[4])
+            info = str(col[5])
+            if check_email(email) and check_mobile(mobile):
+                user = User.objects.create_user(user_type='T', username=id, password=id, name=name, email=email,
+                                                mobile=mobile)
+                Teacher.objects.create(user=user, institute=institute, teacher_info=info)
+                res.append({'id': id, 'name': name, 'email': email, 'mobile': mobile, 'institute': institute, 'info': info})
+        except Exception as e:
+            return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res))
 
 
 
