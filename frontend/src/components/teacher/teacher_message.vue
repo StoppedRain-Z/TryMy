@@ -70,7 +70,7 @@ export default {
             var array = {
                 "email": this.detail_message.email,
                 "mobile": this.detail_message.mobile,
-                "teacher_info": this.detail_message.grade
+                "teacher_info": this.detail_message.teacher_info
             }
             console.log(array)
             this.$http

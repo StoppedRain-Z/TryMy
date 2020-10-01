@@ -32,7 +32,8 @@
                   type="datetime"
                   placeholder="选择日期"
                   v-model="formData.end_time"
-                  style="width: 100%;">
+                  style="width: 100%;"
+                  @change="timeChange">
                 </el-date-picker>
               </el-form-item>
             </el-col>
@@ -127,6 +128,14 @@ export default {
         }
         this.formData.file = event.target.files[0]
         console.log(this.formData.file)
+    },
+    timeChange(time){
+      console.log(time)
+      if(time.length && time[0] && time[1]){
+        if(parseTime(this.formData.end_time) === '00:00:00'){
+          this.formData.end_time = new Date(parseTime(time[1], '{y}-{m}-{d}'+'23:59:59'))
+        }
+      }
     }
   },
   created() {

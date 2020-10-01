@@ -98,7 +98,7 @@ export default {
           }else if(result.body.msg === "缺少注册信息"){
             alert(result.body.msg)
           }else{
-            alert("注册失败，该用户可能已经注册过")
+            alert(result.body.msg)
           }
           /*if(result.body.msg === 'ok'){
             alert("注册成功");
