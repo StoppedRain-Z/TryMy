@@ -25,19 +25,19 @@ EMAIL_ADDRESS = 'zhangrt20@126.com'
 
 
 def teacher_desc(name, title):
-    start = '老师，您好'
-    content = '您的学生' + name + '已完成毕设进度检查：' + title
-    end = '请您及时上线查看批改'
-    wish = '此邮件为系统自动邮件，请勿回复'
+    start = '老师，您好\n'
+    content = '您的学生' + name + '已完成毕设进度检查：' + title +'\n'
+    end = '请您及时上线查看批改\n'
+    wish = '此邮件为系统自动邮件，请勿回复\n'
     return start + content + end + wish
 
 
 def desc_detail(title, desc):
-    hello = '同学，你好'
-    head_desc = '你的辅导员发布了新的毕设进度检查。'
-    new_title = '进度标题：' + title
-    new_desc = '进度描述：' + desc
-    end = '此邮件为系统自动邮件，请勿回复'
+    hello = '同学，你好\n'
+    head_desc = '你的辅导员发布了新的毕设进度检查。\n'
+    new_title = '进度标题：' + title + '\n'
+    new_desc = '进度描述：' + desc + '\n'
+    end = '此邮件为系统自动邮件，请勿回复\n'
     return hello + head_desc + new_title + new_desc + end
 
 
@@ -1009,6 +1009,7 @@ def change_password(request):
     if authenticate(username=user.username, password=old_pwd) is not None:
         user.set_password(new_pwd)
         user.save()
+        logout(user)
         return HttpResponse('ok')
     else:
         return HttpResponse('密码错误')
