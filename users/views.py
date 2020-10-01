@@ -24,11 +24,12 @@ class RegisterView(View):
     """
     用户注册接口
     """
+    '''
     @staticmethod
     def get(request):
         print("visit register")
         return render(request, 'register')
-
+    '''
     @staticmethod
     def post(request):
         print("post register")
@@ -85,10 +86,11 @@ class RegisterView(View):
 
 
 class LoginView(View):
+    '''
     @staticmethod
     def get(request):
         return render(request, 'login')
-
+'''
     @staticmethod
     def post(request):
         response = {}
