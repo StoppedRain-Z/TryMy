@@ -30,7 +30,7 @@ urlpatterns = [
     path('student_detail/', student_detail),   # 学生个人信息，导师和辅导员查看
     path('student_file_download/', student_file_download),
     path('progress_file_download/', progress_file_download),
-    path('send_mail_teacher/', send_email_teacher),
+    path('assistant_center/progress_student/send_mail_teacher/', send_email_teacher),
     path('assistant_center/create_many_student/', create_many_student),
     path('assistant_center/create_many_teacher/', create_many_teacher),
     path('change_password/', change_password),

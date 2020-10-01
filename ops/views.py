@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, reverse
 from django.views import View
 from django.contrib.auth.hashers import make_password
 from .models import *
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import authenticate, logout
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse, FileResponse
 import json
 from datetime import datetime, tzinfo, timedelta, date
@@ -24,19 +24,30 @@ from django.utils.encoding import escape_uri_path
 EMAIL_ADDRESS = 'zhangrt20@126.com'
 
 
-def teacher_desc(name, title):
+def get_ip(request):
+    '''获取请求者的IP信息'''
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')  # 判断是否使用代理
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]  # 使用代理获取真实的ip
+    else:
+        ip = request.META.get('REMOTE_ADDR')  # 未使用代理获取IP
+    return 'http://' + ip + ':8000/'
+
+
+def teacher_desc(name, title, ip):
     start = '老师，您好\n'
-    content = '您的学生' + name + '已完成毕设进度检查：' + title +'\n'
+    content = '您的学生' + name + '已完成毕设进度检查：' + title + ip + '\n'
     end = '请您及时上线查看批改\n'
     wish = '此邮件为系统自动邮件，请勿回复\n'
     return start + content + end + wish
 
 
-def desc_detail(title, desc):
+def desc_detail(title, desc, ip):
     hello = '同学，你好\n'
-    head_desc = '你的辅导员发布了新的毕设进度检查。\n'
+    head_desc = '你的辅导员发布了新的毕设进度检查。' + ip + '\n'
     new_title = '进度标题：' + title + '\n'
     new_desc = '进度描述：' + desc + '\n'
+
     end = '此邮件为系统自动邮件，请勿回复\n'
     return hello + head_desc + new_title + new_desc + end
 
@@ -408,7 +419,7 @@ class S_Progress_Detail(View):
                 progress.save()
                 # 向老师发送邮件
                 print('send_mail teacher start')
-                send_mail("学生作业提交", teacher_desc(student.user.name, detail.title), EMAIL_ADDRESS, [progress.teacher.user.email], fail_silently=False)
+                send_mail("学生作业提交", teacher_desc(student.user.name, detail.title, get_ip(request)), EMAIL_ADDRESS, [progress.teacher.user.email], fail_silently=False)
                 print('send_mail teacher end')
                 return HttpResponse('ok')
             else:
@@ -751,7 +762,7 @@ def create_progress(request):
             Progress.objects.create(detail=progress, student=student, teacher=student.teacher)
             email_list.append(student.user.email)
         print('send email start')
-        send_mail(title, desc_detail(title, desc), EMAIL_ADDRESS, email_list, fail_silently=False)
+        send_mail(title, desc_detail(title, desc, get_ip(request)), EMAIL_ADDRESS, email_list, fail_silently=False)
         print('send email end')
         return HttpResponse('ok')
     except Exception as e:
@@ -892,7 +903,7 @@ def send_email_teacher(request):
     title = request.POST.get('title')
     try:
         teacher = User.objects.get(username=teacher_id).teacher
-        send_mail('请及时批改毕设进度',teacher_desc(student_name, title), EMAIL_ADDRESS, [teacher.user.email], fail_silently=False)
+        send_mail('请及时批改毕设进度', teacher_desc(student_name, title, get_ip(request)), EMAIL_ADDRESS, [teacher.user.email], fail_silently=False)
         return HttpResponse('ok')
     except Exception as e:
         return HttpResponse(str(e))
@@ -1009,7 +1020,6 @@ def change_password(request):
     if authenticate(username=user.username, password=old_pwd) is not None:
         user.set_password(new_pwd)
         user.save()
-        logout(user)
         return HttpResponse('ok')
     else:
         return HttpResponse('密码错误')

@@ -117,7 +117,7 @@ export default {
       }else {
         return 'success-row'
       }
-      
+
     },
     send_to_teacher(row){
       var array = {
@@ -127,7 +127,7 @@ export default {
       }
       console.log(array)
       this.$http
-        .post('assistant_center/progress_student/send_mail_teacher', array)
+        .post('assistant_center/progress_student/send_mail_teacher/', array)
         .then(result => {
           console.log(result.body)
           if (result.body === 'ok') {
